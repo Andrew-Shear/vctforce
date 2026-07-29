@@ -6,10 +6,11 @@ from bs4 import BeautifulSoup
 import random
 
 matchIDs = []
-with open(f"VCL_data/VCL_matchIDs.txt", "r") as file:
-    matchIDs = file.read().splitlines()
+for year in range(2023, 2027):
+    with open(f"matchIDs/{year}.txt", "r") as file:
+        matchIDs += file.read().splitlines()
 
-with open(f"VCL_data/data_VCL.py", "w") as file:
+with open(f"VCT_data/data_VCT.py", "w") as file:
     wait = 0
     file.write("data = [\n")
     for i in range(len(matchIDs)):
