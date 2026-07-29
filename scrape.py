@@ -7,7 +7,7 @@ import random
 
 for year in range(2023, 2027):
     matchIDs = []
-    with open(f"{year}.txt", "r") as file:
+    with open(f"matchIDs/{year}.txt", "r") as file:
         matchIDs = file.read().splitlines()
 
     with open(f"newData_{year}.py", "w") as file:
