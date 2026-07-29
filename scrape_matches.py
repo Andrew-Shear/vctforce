@@ -47,7 +47,7 @@ with open("VCL_data/VCL_matchIDs.py", "w") as file:
             file.write("\n")
         wait += 1
         if wait > 5:
-            time.sleep(5 + 2*random.random())
+            time.sleep(1 + 1.5*random.random())
             wait = 0
 
         print(f"{len(VCL_events.events)-i-1} events left")
