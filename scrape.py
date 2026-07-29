@@ -14,7 +14,21 @@ with open(f"VCL_data/data_VCL.py", "w") as file:
     file.write("data = [\n")
     for i in range(len(matchIDs)):
         match_id = matchIDs[i]
-        response = requests.get(f"https://www.vlr.gg/" + match_id + "?tab=economy")
+        foundMatch = False
+        attempts = 0
+        while not foundMatch:
+            try:
+                response = requests.get(f"https://www.vlr.gg/" + match_id + "?tab=economy")
+                foundMatch = True
+            except:
+                attempts += 1
+                if attempts >= 5:
+                    print("giving up")
+                    exit(1)
+                print("response error occured, waiting 5 seconds before trying again.")
+                time.sleep(5)
+
+
         if response.status_code == 429:
             print("TOO FAST")
             exit(1)
@@ -49,7 +63,11 @@ with open(f"VCL_data/data_VCL.py", "w") as file:
                 roundEcos.append([float(bank.text.strip()[:-1]) for bank in td.find_all('div', class_='bank')])
                 roundSpent.append([r.text.count("$") for r in Round])
                     
-            file.write(str({"link": response.url, "teams": teamNames, "map": mapNames[mapNameIndex], "roundWins": roundWins, "roundEcos": roundEcos, "roundSpent": roundSpent}))
+            if mapNameIndex >= len(mapNames):
+                # it failed to pull the map names b.c. it was a bo1 - just don't bother tbh
+                file.write(str({"link": response.url, "teams": teamNames, "map": "n/a", "roundWins": roundWins, "roundEcos": roundEcos, "roundSpent": roundSpent}))
+            else:
+                file.write(str({"link": response.url, "teams": teamNames, "map": mapNames[mapNameIndex], "roundWins": roundWins, "roundEcos": roundEcos, "roundSpent": roundSpent}))
             file.write(",\n")
             mapNameIndex += 1
 
