@@ -1,4 +1,4 @@
-import newData_2026, newData_2025, newData_2024, newData_2023
+from VCT_data import newData_2026, newData_2025, newData_2024, newData_2023
 
 forced = [0, [0, 0], [[0, 0], [0, 0]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]]] # [#won, [won, lost], [[wonwon, wonlost], [lostwon, lostlost]], etc.]
 not_forced = [0, [0, 0], [[0, 0], [0, 0]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]]] # [#won, [won, lost], [[wonwon, wonlost], [lostwon, lostlost]], etc.]
@@ -250,10 +250,10 @@ print(f"average money after going 0-5 if you don't force: {not_forced_money[3][4
 
 
 # team specific data
-teamSuccessRate = []
-for team, rate in teamForceSuccessRate.items():
-    if rate[1] > 10:
-        teamSuccessRate.append((team, rate, rate[0]/rate[1]))
-
-teamSuccessRate.sort(key=lambda x: x[2], reverse=True)
-print(teamSuccessRate)
+#teamSuccessRate = []
+#for team, rate in teamForceSuccessRate.items():
+#    if rate[1] > 10:
+#        teamSuccessRate.append((team, rate, rate[0]/rate[1]))
+#
+#teamSuccessRate.sort(key=lambda x: x[2], reverse=True)
+#print(teamSuccessRate)
