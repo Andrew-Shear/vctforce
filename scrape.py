@@ -120,7 +120,11 @@ with open(f"VCL_data/data_VCL.py", "w") as file:
                     roundWins[-1].append("ct")
                 else:
                     roundWins[-1].append("t")
-                roundWinMethods.append(winnerDiv.find("img")["src"][20:-5])
+                img = winnerDiv.find("img")
+                if img is not None:
+                    roundWinMethods.append(img["src"][20:-5])
+                else:
+                    roundWinMethods.append("n/a")
 
                     
             file.write(str({"matchID": matchID,

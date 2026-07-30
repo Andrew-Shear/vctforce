@@ -11,7 +11,7 @@ teamForceSuccessRate = {}
 
 for (teams, roundWins, roundEco, roundSpent) in newData_2026.data + newData_2025.data + newData_2024.data + newData_2023.data:
     roundLossesIndex = [1 if r[0] == teams[0] else 0 for r in roundWins]
-    for startingIndex in (0,):
+    for startingIndex in (0,12):
         if len(roundWins) - startingIndex < 2: # not enough rounds in the half to analyze
             break
 
@@ -252,7 +252,7 @@ print(f"average money after going 0-5 if you don't force: {not_forced_money[3][4
 # team specific data
 teamSuccessRate = []
 for team, rate in teamForceSuccessRate.items():
-    if rate[1] > 3:
+    if rate[1] > 8:
         teamSuccessRate.append((team, rate, rate[0]/rate[1]))
 
 teamSuccessRate.sort(key=lambda x: x[2], reverse=True)
