@@ -1,20 +1,18 @@
 import requests
-import re
 import time
-import json
 from bs4 import BeautifulSoup
 import random
 
 matchIDs = []
-for year in range(2023, 2027):
-    with open(f"matchIDs/{year}.txt", "r") as file:
-        matchIDs += file.read().splitlines()
+with open(f"VCL_data/VCL_matchIDs.txt", "r") as file:
+    matchIDs += file.read().splitlines()
 
-with open(f"VCT_data/data_VCT.py", "w") as file:
+with open(f"VCL_data/data_VCL.py", "w") as file:
     wait = 0
     file.write("data = [\n")
     for i in range(len(matchIDs)):
         matchID = matchIDs[i]
+        print("parsing match " + matchID + "...")
         foundMatch = False
         attempts = 0
         while not foundMatch:
@@ -138,7 +136,7 @@ with open(f"VCT_data/data_VCT.py", "w") as file:
 
         wait += 1
         if wait > 6:
-            time.sleep(1 + 1.5*random.random())
+            time.sleep(0.5 + 1.25*random.random())
             wait = 0
         print(f"{len(matchIDs)-i-1} matches left")
 
