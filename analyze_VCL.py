@@ -229,7 +229,7 @@ print(f"chance of going 3-2 if you don't force: {not_forced_chance_3_2*100:.2f}%
 print(f"chance of going 2-3 if you don't force: {not_forced_chance_2_3*100:.2f}%")
 print(f"chance of going 1-4 if you don't force: {not_forced_chance_1_4*100:.2f}%")
 print(f"chance of going 0-5 if you don't force: {not_forced_chance_0_5*100:.2f}%")
-print("--------------------------------")
+#print("--------------------------------")
 #print(f"average money after going 4-1 if you force: {forced_money[3][0]/forced_scores[3][0]:.1f}k")
 #print(f"average money after going 3-2 if you force: {forced_money[3][1]/forced_scores[3][1]:.1f}k")
 #print(f"average money after going 2-3 if you force: {forced_money[3][2]/forced_scores[3][2]:.1f}k")
