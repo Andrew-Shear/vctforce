@@ -1,6 +1,5 @@
-from VCT_data import data_VCT
-from VCL_data import data_VCL
 import copy
+import json
 import sys
 
 forced_template = [0, [0, 0], [[0, 0], [0, 0]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]]] # [#won, [won, lost], [[wonwon, wonlost], [lostwon, lostlost]], etc.]
@@ -338,7 +337,8 @@ def printTeamResults(teamForceSuccessRate):
     print(teamSuccessRate)
 
 if __name__ == "__main__":
-    data = data_VCT.data
+    with open("VCT_data/data_VCT.json") as file:
+        data = json.load(file)
 
     args = {}
     for argument in [arg.lower() for arg in sys.argv[1:]]:
@@ -348,7 +348,8 @@ if __name__ == "__main__":
             case "--defense" | "-d":
                 args["defense"] = True
             case "--vcl":
-                data = data_VCL.data
+                with open("VCL_data/data_VCL.json") as file:
+                    data = json.load(file)
             case "--teams" | "-t":
                 args["teams"] = True
             case "-r4" | "--round4":
