@@ -1,3 +1,4 @@
+#! /bin/python3
 import copy
 import orjson
 import sys
@@ -35,6 +36,7 @@ def analyzeMapData(data, *, args):
     for mapName in maps:
         if mapName == "Summit":
             print("Skipping Summit - not enough data")
+            print("\n\n\n\n")
             continue
         if mapName.lower() == "n/a":
             continue
@@ -388,10 +390,21 @@ if __name__ == "__main__":
 
 
     if "attack" in args and "defense" in args:
-        print("You can't specify only attack and only defense. If you want to show the data for both sides, enter neither argument.")
+        print("You can't specify only attack and only defense. If you want to show the data for both sides, use neither argument.")
         exit(1)
     if "first" in args and "second" in args:
-        print("You can't specify only frst and second half. If you want to show the data for both halves, enter neither argument.")
+        print("You can't specify only frst and second half. If you want to show the data for both halves, use neither argument.")
+        exit(1)
+    if "round4" in args and "round5" in args:
+        print("You can't specify going up to round 4 and round 5 at once. If you want to show the data up to round 5, use only -r5 or --round5.")
+        exit(1)
+    if "maps" in args and "vcl" not in args and ("round4" in args or "round5" in args):
+        print("Not enough individual map data for chosen restrictions.")
+        exit(1)
+    if "maps" in args and "vcl" in args and "round5" in args:
+        print("Not enough individual map data for chosen restrictions.")
+        exit(1)
+
 
     if "vcl" in args:
         with open("VCL_data/data_VCL.json") as file:
