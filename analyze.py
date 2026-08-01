@@ -339,32 +339,59 @@ def printTeamResults(teamForceSuccessRate):
 if __name__ == "__main__":
 
     args = {}
-    for argument in [arg.lower() for arg in sys.argv[1:]]:
-        match argument.lower():
-            case "--attack" | "-a":
-                args["attack"] = True
-            case "--defense" | "-d":
-                args["defense"] = True
-            case "--vcl":
-                args["vcl"] = True
-            case "--teams" | "-t":
-                args["teams"] = True
-            case "-r4" | "--round4":
-                args["round4"] = True
-            case "-r5" | "--round5":
-                args["round5"] = True
-            case "--maps":
-                args["maps"] = True
-            case "-f" | "--first" | "--firsthalf":
-                args["first"] = True
-            case "-s" | "--second" | "--secondhalf":
-                args["second"] = True
-            case "-m" | "--money":
-                args["money"] = True
+    sysargs = [arg.lower() for arg in sys.argv[1:]]
+    for argument in sysargs:
+        if argument[0] != "-": continue
+        if argument[1] == "-": # it's a double -- command
+            match argument[2:].lower():
+                case "attack":
+                    args["attack"] = True
+                case "defense":
+                    args["defense"] = True
+                case "vcl":
+                    args["vcl"] = True
+                case "teams":
+                    args["teams"] = True
+                case "round4":
+                    args["round4"] = True
+                case "round5":
+                    args["round5"] = True
+                case "maps":
+                    args["maps"] = True
+                case "first" | "firsthalf":
+                    args["first"] = True
+                case "second" | "secondhalf":
+                    args["second"] = True
+                case "money":
+                    args["money"] = True
+        else: # it's a single - command, so might be multiple commands in one
+            i = 1
+            while i < len(argument):
+                match argument[i].lower():
+                    case "a":
+                        args["attack"] = True
+                    case "d":
+                        args["defense"] = True
+                    case "t":
+                        args["teams"] = True
+                    case "r":
+                        if i+1 < len(argument) and argument[i+1] in ("4", "5"):
+                            args["round" + argument[i+1]] = True
+                            i += 1
+                    case "f":
+                        args["first"] = True
+                    case "s":
+                        args["second"] = True
+                    case "m":
+                        args["money"] = True
+                i += 1
+
 
     if "attack" in args and "defense" in args:
-        print("You can't specify only attack and only defense. If you want both, enter neither argument.")
+        print("You can't specify only attack and only defense. If you want to show the data for both sides, enter neither argument.")
         exit(1)
+    if "first" in args and "second" in args:
+        print("You can't specify only frst and second half. If you want to show the data for both halves, enter neither argument.")
 
     if "vcl" in args:
         with open("VCL_data/data_VCL.json") as file:
