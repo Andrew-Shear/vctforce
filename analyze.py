@@ -337,8 +337,6 @@ def printTeamResults(teamForceSuccessRate):
     print(teamSuccessRate)
 
 if __name__ == "__main__":
-    with open("VCT_data/data_VCT.json") as file:
-        data = json.load(file)
 
     args = {}
     for argument in [arg.lower() for arg in sys.argv[1:]]:
@@ -348,8 +346,7 @@ if __name__ == "__main__":
             case "--defense" | "-d":
                 args["defense"] = True
             case "--vcl":
-                with open("VCL_data/data_VCL.json") as file:
-                    data = json.load(file)
+                args["vcl"] = True
             case "--teams" | "-t":
                 args["teams"] = True
             case "-r4" | "--round4":
@@ -368,6 +365,13 @@ if __name__ == "__main__":
     if "attack" in args and "defense" in args:
         print("You can't specify only attack and only defense. If you want both, enter neither argument.")
         exit(1)
+
+    if "vcl" in args:
+        with open("VCL_data/data_VCL.json") as file:
+            data = json.load(file)
+    else:
+        with open("VCT_data/data_VCT.json") as file:
+            data = json.load(file)
 
     if "maps" in args:
         analyzeMapData(data, args=args)
