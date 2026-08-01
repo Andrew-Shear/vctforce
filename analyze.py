@@ -1,5 +1,5 @@
 import copy
-import json
+import orjson
 import sys
 
 forced_template = [0, [0, 0], [[0, 0], [0, 0]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]]] # [#won, [won, lost], [[wonwon, wonlost], [lostwon, lostlost]], etc.]
@@ -368,10 +368,10 @@ if __name__ == "__main__":
 
     if "vcl" in args:
         with open("VCL_data/data_VCL.json") as file:
-            data = json.load(file)
+            data = orjson.loads(file.read())
     else:
         with open("VCT_data/data_VCT.json") as file:
-            data = json.load(file)
+            data = orjson.loads(file.read())
 
     if "maps" in args:
         analyzeMapData(data, args=args)
