@@ -112,6 +112,9 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
         current[1][won2nd] += 1
         current_scores[0][won2nd] += 1
         current_money[0][won2nd] += float(roundEco[startingIndex+1][loserIndex])
+        #if current == forced:
+        #    print(f"https://www.vlr.gg/{game["matchID"]}?game={game["gameID"]}&tab=economy")
+        #    print("won" if won2nd == 0 else "lost")
 
         # specific team data
         if "teams" in args:
@@ -265,7 +268,7 @@ def printResults(forced, not_forced, forced_money, not_forced_money, forced_scor
     forced_won_lost_lost_won = forced[4][0][1][1][0]/sum(forced[4][0][1][1])
     forced_won_lost_lost_lost = 1-forced_won_lost_lost_won
     forced_lost_won_won_won = forced[4][1][0][0][0]/sum(forced[4][1][0][0])
-    forced_lost_won_won_lost = 1-forced_won_won_won_won
+    forced_lost_won_won_lost = 1-forced_lost_won_won_won
     forced_lost_won_lost_won = forced[4][1][0][1][0]/sum(forced[4][1][0][1])
     forced_lost_won_lost_lost = 1-forced_lost_won_lost_won
     forced_lost_lost_won_won = forced[4][1][1][0][0]/sum(forced[4][1][1][0])
@@ -282,7 +285,7 @@ def printResults(forced, not_forced, forced_money, not_forced_money, forced_scor
     not_forced_won_lost_lost_won = not_forced[4][0][1][1][0]/sum(not_forced[4][0][1][1])
     not_forced_won_lost_lost_lost = 1-not_forced_won_lost_lost_won
     not_forced_lost_won_won_won = not_forced[4][1][0][0][0]/sum(not_forced[4][1][0][0])
-    not_forced_lost_won_won_lost = 1-not_forced_won_won_won_won
+    not_forced_lost_won_won_lost = 1-not_forced_lost_won_won_won
     not_forced_lost_won_lost_won = not_forced[4][1][0][1][0]/sum(not_forced[4][1][0][1])
     not_forced_lost_won_lost_lost = 1-not_forced_lost_won_lost_won
     not_forced_lost_lost_won_won = not_forced[4][1][1][0][0]/sum(not_forced[4][1][1][0])
