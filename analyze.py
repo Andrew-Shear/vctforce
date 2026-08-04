@@ -112,9 +112,6 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
         current[1][won2nd] += 1
         current_scores[0][won2nd] += 1
         current_money[0][won2nd] += float(roundEco[startingIndex+1][loserIndex])
-        #if current == forced:
-        #    print(f"https://www.vlr.gg/{game["matchID"]}?game={game["gameID"]}&tab=economy")
-        #    print("won" if won2nd == 0 else "lost")
 
         # specific team data
         if "teams" in args:
