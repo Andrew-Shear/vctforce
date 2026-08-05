@@ -81,8 +81,8 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
     roundWins = game["roundWins"]
     roundSpent = game["roundSpent"]
     roundEco = game["roundEcos"]
+    roundWinMethods = game["roundWinMethods"]
 
-    # HERE
     roundLossesIndex = [1 if r[0] == teams[0] else 0 for r in roundWins]
     halfRange = (0,12)
     if "first" in args:
@@ -98,14 +98,29 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
 
         
         # are you on attack or defense?
-        if "attack" in args and roundWins[0][1] == 'ct' or "defense" in args and roundWins[0][1] == 't':
+        if "attack" in args and roundWins[startingIndex][1] == 't' or "defense" in args and roundWins[startingIndex][1] == 'ct':
             # if the winner of the first round was on attack, then the loser (forcer) was on defense
             continue
+
+        # remove stomps
+        if "bad" in args:
+            roundWinTeams = [r[0] for r in roundWins[:13]]
+            if roundWinTeams.count(teams[loserIndex]) < 4:
+                continue
+
+        # did you plant?
+        if "planted" in args and not (roundWins[startingIndex][1] == 'ct' and roundWinMethods[startingIndex] == 'defuse'):
+            continue
+        
         
         current = forced if moneySaved2nd < 4.5 else not_forced # 4.5k
         current_scores = forced_scores if moneySaved2nd < 4.5 else not_forced_scores # 4.5k
         current_money = forced_money if moneySaved2nd < 4.5 else not_forced_money # 4.5k
         current[0] += 1
+        #if current == forced:
+        #    print(f"https://www.vlr.gg/{game["matchID"]}?game={game["gameID"]}")
+        #    print(roundWins)
+
 
         # 0 if you won, 1 if you lost
         won2nd = int(roundWins[startingIndex+1] == roundWins[startingIndex])
@@ -145,188 +160,197 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
         current_scores[3][won2nd + won3rd + won4th + won5th] += 1
         current_money[3][won2nd + won3rd + won4th + won5th] += float(roundEco[startingIndex+4][loserIndex])
 
-            # HERE
-
 
 def printResults(forced, not_forced, forced_money, not_forced_money, forced_scores, not_forced_scores, *, args):
-    forced_percent = forced[0]/(forced[0]+not_forced[0])
+    try:
+        output = ""
 
-    forced_won = forced[1][0]/sum(forced[1])
-    forced_lost = 1-forced_won
+        forced_percent = forced[0]/(forced[0]+not_forced[0])
 
-    not_forced_won = not_forced[1][0]/sum(not_forced[1])
-    not_forced_lost = 1-not_forced_won
+        forced_won = forced[1][0]/sum(forced[1])
+        forced_lost = 1-forced_won
 
-    forced_won_won = forced[2][0][0]/sum(forced[2][0])
-    forced_won_lost = 1-forced_won_won
-    forced_lost_won = forced[2][1][0]/sum(forced[2][1])
-    forced_lost_lost = 1-forced_lost_won
+        not_forced_won = not_forced[1][0]/sum(not_forced[1])
+        not_forced_lost = 1-not_forced_won
 
-    not_forced_won_won = not_forced[2][0][0]/sum(not_forced[2][0])
-    not_forced_won_lost = 1-not_forced_won_won
-    not_forced_lost_won = not_forced[2][1][0]/sum(not_forced[2][1])
-    not_forced_lost_lost = 1-not_forced_lost_won 
+        forced_won_won = forced[2][0][0]/sum(forced[2][0])
+        forced_won_lost = 1-forced_won_won
+        forced_lost_won = forced[2][1][0]/sum(forced[2][1])
+        forced_lost_lost = 1-forced_lost_won
 
-    print(f"number of 2nd rounds analyzed: {forced[0] + not_forced[0]}")
-    print(f"number of 2nd rounds forced: {forced[0]}")
-    print(f"percentage of 2nd rounds forced: {forced_percent*100:.2f}%")
-    print("--------------------------------")
-    print(f"percentage of forced 2nd rounds won: {forced_won*100:.2f}%")
-    print(f"percentage of forced 2nd rounds lost: {forced_lost*100:.2f}%")
-    print(f"percentage of 3rd rounds won after forcing and winning: {forced_won_won*100:.2f}%")
-    print(f"percentage of 3rd rounds won after forcing and losing: {forced_lost_won*100:.2f}%")
-    print("--------------------------------")
-    print(f"percentage of non forced 2nd rounds won: {not_forced_won*100:.2f}%")
-    print(f"percentage of non forced 2nd rounds lost: {not_forced_lost*100:.2f}%")
-    print(f"percentage of 3rd rounds won after not forcing and winning: {not_forced_won_won*100:.2f}%")
-    print(f"percentage of 3rd rounds won after not forcing and losing: {not_forced_lost_won*100:.2f}%")
-    print("--------------------------------")
-    print("--------------------------------")
-    print(f"chance of going 2-1 if you force: {(forced_won*forced_won_won)*100:.2f}%")
-    print(f"chance of going 1-2 if you force: {(forced_won*forced_won_lost + forced_lost*forced_lost_won)*100:.2f}%")
-    print(f"chance of going 0-3 if you force: {forced_lost*forced_lost_lost*100:.2f}%")
-    print("--------------------------------")
-    print(f"chance of going 2-1 if you don't force: {(not_forced_won*not_forced_won_won)*100:.2f}%")
-    print(f"chance of going 1-2 if you don't force: {(not_forced_won*not_forced_won_lost + not_forced_lost*not_forced_lost_won)*100:.2f}%")
-    print(f"chance of going 0-3 if you don't force: {not_forced_lost*not_forced_lost_lost*100:.2f}%")
-    print("--------------------------------")
-    if "money" in args:
-        print(f"average money after going 2-1 if you force: {forced_money[1][0]/forced_scores[1][0]:.1f}k")
-        print(f"average money after going 1-2 if you force: {forced_money[1][1]/forced_scores[1][1]:.1f}k")
-        print(f"average money after going 0-3 if you force: {forced_money[1][2]/forced_scores[1][2]:.1f}k")
-        print("--------------------------------")
-        print(f"average money after going 2-1 if you don't force: {not_forced_money[1][0]/not_forced_scores[1][0]:.1f}k")
-        print(f"average money after going 1-2 if you don't force: {not_forced_money[1][1]/not_forced_scores[1][1]:.1f}k")
-        print(f"average money after going 0-3 if you don't force: {not_forced_money[1][2]/not_forced_scores[1][2]:.1f}k")
-        print("--------------------------------")
+        not_forced_won_won = not_forced[2][0][0]/sum(not_forced[2][0])
+        not_forced_won_lost = 1-not_forced_won_won
+        not_forced_lost_won = not_forced[2][1][0]/sum(not_forced[2][1])
+        not_forced_lost_lost = 1-not_forced_lost_won 
 
-    if "round4" not in args and "round5" not in args: return
+        output += f"number of 2nd rounds analyzed: {forced[0] + not_forced[0]}" + "\n"
+        output += f"number of 2nd rounds forced: {forced[0]}" + "\n"
+        output += f"percentage of 2nd rounds forced: {forced_percent*100:.2f}%" + "\n"
+        output += "--------------------------------" + "\n"
+        output += f"percentage of forced 2nd rounds won: {forced_won*100:.2f}%" + "\n"
+        output += f"percentage of forced 2nd rounds lost: {forced_lost*100:.2f}%" + "\n"
+        output += f"percentage of 3rd rounds won after forcing and winning: {forced_won_won*100:.2f}%" + "\n"
+        output += f"percentage of 3rd rounds won after forcing and losing: {forced_lost_won*100:.2f}%" + "\n"
+        output += "--------------------------------" + "\n"
+        output += f"percentage of non forced 2nd rounds won: {not_forced_won*100:.2f}%" + "\n"
+        output += f"percentage of non forced 2nd rounds lost: {not_forced_lost*100:.2f}%" + "\n"
+        output += f"percentage of 3rd rounds won after not forcing and winning: {not_forced_won_won*100:.2f}%" + "\n"
+        output += f"percentage of 3rd rounds won after not forcing and losing: {not_forced_lost_won*100:.2f}%" + "\n"
+        output += "--------------------------------" + "\n"
+        output += "--------------------------------" + "\n"
+        output += f"chance of going 2-1 if you force: {(forced_won*forced_won_won)*100:.2f}%" + "\n"
+        output += f"chance of going 1-2 if you force: {(forced_won*forced_won_lost + forced_lost*forced_lost_won)*100:.2f}%" + "\n"
+        output += f"chance of going 0-3 if you force: {forced_lost*forced_lost_lost*100:.2f}%" + "\n"
+        output += "--------------------------------" + "\n"
+        output += f"chance of going 2-1 if you don't force: {(not_forced_won*not_forced_won_won)*100:.2f}%" + "\n"
+        output += f"chance of going 1-2 if you don't force: {(not_forced_won*not_forced_won_lost + not_forced_lost*not_forced_lost_won)*100:.2f}%" + "\n"
+        output += f"chance of going 0-3 if you don't force: {not_forced_lost*not_forced_lost_lost*100:.2f}%" + "\n"
+        output += "--------------------------------" + "\n"
+        if "money" in args:
+            output += f"average money after going 2-1 if you force: {forced_money[1][0]/forced_scores[1][0]:.1f}k" + "\n"
+            output += f"average money after going 1-2 if you force: {forced_money[1][1]/forced_scores[1][1]:.1f}k" + "\n"
+            output += f"average money after going 0-3 if you force: {forced_money[1][2]/forced_scores[1][2]:.1f}k" + "\n"
+            output += "--------------------------------" + "\n"
+            output += f"average money after going 2-1 if you don't force: {not_forced_money[1][0]/not_forced_scores[1][0]:.1f}k" + "\n"
+            output += f"average money after going 1-2 if you don't force: {not_forced_money[1][1]/not_forced_scores[1][1]:.1f}k" + "\n"
+            output += f"average money after going 0-3 if you don't force: {not_forced_money[1][2]/not_forced_scores[1][2]:.1f}k" + "\n"
+            output += "--------------------------------" + "\n"
 
-    forced_won_won_won = forced[3][0][0][0]/sum(forced[3][0][0])
-    forced_won_won_lost = 1-forced_won_won_won
-    forced_won_lost_won = forced[3][0][1][0]/sum(forced[3][0][1])
-    forced_won_lost_lost = 1-forced_won_lost_won
-    forced_lost_won_won = forced[3][1][0][0]/sum(forced[3][1][0])
-    forced_lost_won_lost = 1-forced_lost_won_won
-    forced_lost_lost_won = forced[3][1][1][0]/sum(forced[3][1][1])
-    forced_lost_lost_lost = 1-forced_lost_lost_won
+        if "round4" not in args and "round5" not in args:
+            print(output)
+            return
 
-    not_forced_won_won_won = not_forced[3][0][0][0]/sum(not_forced[3][0][0])
-    not_forced_won_won_lost = 1-not_forced_won_won_won
-    not_forced_won_lost_won = not_forced[3][0][1][0]/sum(not_forced[3][1][0])
-    not_forced_won_lost_lost = 1-not_forced_won_lost_won
-    not_forced_lost_won_won = not_forced[3][1][0][0]/sum(not_forced[3][1][0])
-    not_forced_lost_won_lost = 1-not_forced_lost_won_won
-    not_forced_lost_lost_won = not_forced[3][1][1][0]/sum(not_forced[3][1][1])
-    not_forced_lost_lost_lost = 1-not_forced_lost_lost_won
+        forced_won_won_won = forced[3][0][0][0]/sum(forced[3][0][0])
+        forced_won_won_lost = 1-forced_won_won_won
+        forced_won_lost_won = forced[3][0][1][0]/sum(forced[3][0][1])
+        forced_won_lost_lost = 1-forced_won_lost_won
+        forced_lost_won_won = forced[3][1][0][0]/sum(forced[3][1][0])
+        forced_lost_won_lost = 1-forced_lost_won_won
+        forced_lost_lost_won = forced[3][1][1][0]/sum(forced[3][1][1])
+        forced_lost_lost_lost = 1-forced_lost_lost_won
 
-    forced_chance_3_1 = forced_won*forced_won_won*forced_won_won_won
-    forced_chance_2_2 = forced_won*forced_won_won*forced_won_won_lost + forced_won*forced_won_lost*forced_won_lost_won + forced_lost*forced_lost_won*forced_lost_won_won
-    forced_chance_1_3 = forced_won*forced_won_lost*forced_won_lost_lost + forced_lost*forced_lost_won*forced_lost_won_lost + forced_lost*forced_lost_lost*forced_lost_lost_won
-    forced_chance_0_4 = forced_lost*forced_lost_lost*forced_lost_lost_lost
+        not_forced_won_won_won = not_forced[3][0][0][0]/sum(not_forced[3][0][0])
+        not_forced_won_won_lost = 1-not_forced_won_won_won
+        not_forced_won_lost_won = not_forced[3][0][1][0]/sum(not_forced[3][1][0])
+        not_forced_won_lost_lost = 1-not_forced_won_lost_won
+        not_forced_lost_won_won = not_forced[3][1][0][0]/sum(not_forced[3][1][0])
+        not_forced_lost_won_lost = 1-not_forced_lost_won_won
+        not_forced_lost_lost_won = not_forced[3][1][1][0]/sum(not_forced[3][1][1])
+        not_forced_lost_lost_lost = 1-not_forced_lost_lost_won
 
-    not_forced_chance_3_1 = not_forced_won*not_forced_won_won*not_forced_won_won_won
-    not_forced_chance_2_2 = not_forced_won*not_forced_won_won*not_forced_won_won_lost + not_forced_won*not_forced_won_lost*not_forced_won_lost_won + not_forced_lost*not_forced_lost_won*not_forced_lost_won_won
-    not_forced_chance_1_3 = not_forced_won*not_forced_won_lost*not_forced_won_lost_lost + not_forced_lost*not_forced_lost_won*not_forced_lost_won_lost + not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_won
-    not_forced_chance_0_4 = not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_lost
+        forced_chance_3_1 = forced_won*forced_won_won*forced_won_won_won
+        forced_chance_2_2 = forced_won*forced_won_won*forced_won_won_lost + forced_won*forced_won_lost*forced_won_lost_won + forced_lost*forced_lost_won*forced_lost_won_won
+        forced_chance_1_3 = forced_won*forced_won_lost*forced_won_lost_lost + forced_lost*forced_lost_won*forced_lost_won_lost + forced_lost*forced_lost_lost*forced_lost_lost_won
+        forced_chance_0_4 = forced_lost*forced_lost_lost*forced_lost_lost_lost
+
+        not_forced_chance_3_1 = not_forced_won*not_forced_won_won*not_forced_won_won_won
+        not_forced_chance_2_2 = not_forced_won*not_forced_won_won*not_forced_won_won_lost + not_forced_won*not_forced_won_lost*not_forced_won_lost_won + not_forced_lost*not_forced_lost_won*not_forced_lost_won_won
+        not_forced_chance_1_3 = not_forced_won*not_forced_won_lost*not_forced_won_lost_lost + not_forced_lost*not_forced_lost_won*not_forced_lost_won_lost + not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_won
+        not_forced_chance_0_4 = not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_lost
 
 
-    print("--------------------------------")
-    print(f"chance of going 3-1 if you force: {forced_chance_3_1*100:.2f}%")
-    print(f"chance of going 2-2 if you force: {forced_chance_2_2*100:.2f}%")
-    print(f"chance of going 1-3 if you force: {forced_chance_1_3*100:.2f}%")
-    print(f"chance of going 0-4 if you force: {forced_chance_0_4*100:.2f}%")
-    print("--------------------------------")
-    print(f"chance of going 3-1 if you don't force: {not_forced_chance_3_1*100:.2f}%")
-    print(f"chance of going 2-2 if you don't force: {not_forced_chance_2_2*100:.2f}%")
-    print(f"chance of going 1-3 if you don't force: {not_forced_chance_1_3*100:.2f}%")
-    print(f"chance of going 0-4 if you don't force: {not_forced_chance_0_4*100:.2f}%")
-    print("--------------------------------")
-    if "money" in args:
-        print(f"average money after going 3-1 if you force: {forced_money[2][0]/forced_scores[2][0]:.1f}k")
-        print(f"average money after going 2-2 if you force: {forced_money[2][1]/forced_scores[2][1]:.1f}k")
-        print(f"average money after going 1-3 if you force: {forced_money[2][2]/forced_scores[2][2]:.1f}k")
-        print(f"average money after going 0-4 if you force: {forced_money[2][3]/forced_scores[2][3]:.1f}k")
-        print("--------------------------------")
-        print(f"average money after going 3-1 if you don't force: {not_forced_money[2][0]/not_forced_scores[2][0]:.1f}k")
-        print(f"average money after going 2-2 if you don't force: {not_forced_money[2][1]/not_forced_scores[2][1]:.1f}k")
-        print(f"average money after going 1-3 if you don't force: {not_forced_money[2][2]/not_forced_scores[2][2]:.1f}k")
-        print(f"average money after going 0-4 if you don't force: {not_forced_money[2][3]/not_forced_scores[2][3]:.1f}k")
-        print("--------------------------------")
+        output += "--------------------------------" + "\n"
+        output += f"chance of going 3-1 if you force: {forced_chance_3_1*100:.2f}%" + "\n"
+        output += f"chance of going 2-2 if you force: {forced_chance_2_2*100:.2f}%" + "\n"
+        output += f"chance of going 1-3 if you force: {forced_chance_1_3*100:.2f}%" + "\n"
+        output += f"chance of going 0-4 if you force: {forced_chance_0_4*100:.2f}%" + "\n"
+        output += "--------------------------------" + "\n"
+        output += f"chance of going 3-1 if you don't force: {not_forced_chance_3_1*100:.2f}%" + "\n"
+        output += f"chance of going 2-2 if you don't force: {not_forced_chance_2_2*100:.2f}%" + "\n"
+        output += f"chance of going 1-3 if you don't force: {not_forced_chance_1_3*100:.2f}%" + "\n"
+        output += f"chance of going 0-4 if you don't force: {not_forced_chance_0_4*100:.2f}%" + "\n"
+        output += "--------------------------------" + "\n"
+        if "money" in args:
+            output += f"average money after going 3-1 if you force: {forced_money[2][0]/forced_scores[2][0]:.1f}k" + "\n"
+            output += f"average money after going 2-2 if you force: {forced_money[2][1]/forced_scores[2][1]:.1f}k" + "\n"
+            output += f"average money after going 1-3 if you force: {forced_money[2][2]/forced_scores[2][2]:.1f}k" + "\n"
+            output += f"average money after going 0-4 if you force: {forced_money[2][3]/forced_scores[2][3]:.1f}k" + "\n"
+            output += "--------------------------------" + "\n"
+            output += f"average money after going 3-1 if you don't force: {not_forced_money[2][0]/not_forced_scores[2][0]:.1f}k" + "\n"
+            output += f"average money after going 2-2 if you don't force: {not_forced_money[2][1]/not_forced_scores[2][1]:.1f}k" + "\n"
+            output += f"average money after going 1-3 if you don't force: {not_forced_money[2][2]/not_forced_scores[2][2]:.1f}k" + "\n"
+            output += f"average money after going 0-4 if you don't force: {not_forced_money[2][3]/not_forced_scores[2][3]:.1f}k" + "\n"
+            output += "--------------------------------" + "\n"
 
-    if "round5" not in args: return
+        if "round5" not in args:
+            print(output)
+            return
 
-    forced_won_won_won_won = forced[4][0][0][0][0]/sum(forced[4][0][0][0])
-    forced_won_won_won_lost = 1-forced_won_won_won_won
-    forced_won_won_lost_won = forced[4][0][0][1][0]/sum(forced[4][0][0][1])
-    forced_won_won_lost_lost = 1-forced_won_won_lost_won
-    forced_won_lost_won_won = forced[4][0][1][0][0]/sum(forced[4][0][1][0])
-    forced_won_lost_won_lost = 1-forced_won_lost_won_won
-    forced_won_lost_lost_won = forced[4][0][1][1][0]/sum(forced[4][0][1][1])
-    forced_won_lost_lost_lost = 1-forced_won_lost_lost_won
-    forced_lost_won_won_won = forced[4][1][0][0][0]/sum(forced[4][1][0][0])
-    forced_lost_won_won_lost = 1-forced_lost_won_won_won
-    forced_lost_won_lost_won = forced[4][1][0][1][0]/sum(forced[4][1][0][1])
-    forced_lost_won_lost_lost = 1-forced_lost_won_lost_won
-    forced_lost_lost_won_won = forced[4][1][1][0][0]/sum(forced[4][1][1][0])
-    forced_lost_lost_won_lost = 1-forced_lost_lost_won_won
-    forced_lost_lost_lost_won = forced[4][1][1][1][0]/sum(forced[4][1][1][1])
-    forced_lost_lost_lost_lost = 1-forced_lost_lost_lost_won
+        forced_won_won_won_won = forced[4][0][0][0][0]/sum(forced[4][0][0][0])
+        forced_won_won_won_lost = 1-forced_won_won_won_won
+        forced_won_won_lost_won = forced[4][0][0][1][0]/sum(forced[4][0][0][1])
+        forced_won_won_lost_lost = 1-forced_won_won_lost_won
+        forced_won_lost_won_won = forced[4][0][1][0][0]/sum(forced[4][0][1][0])
+        forced_won_lost_won_lost = 1-forced_won_lost_won_won
+        forced_won_lost_lost_won = forced[4][0][1][1][0]/sum(forced[4][0][1][1])
+        forced_won_lost_lost_lost = 1-forced_won_lost_lost_won
+        forced_lost_won_won_won = forced[4][1][0][0][0]/sum(forced[4][1][0][0])
+        forced_lost_won_won_lost = 1-forced_lost_won_won_won
+        forced_lost_won_lost_won = forced[4][1][0][1][0]/sum(forced[4][1][0][1])
+        forced_lost_won_lost_lost = 1-forced_lost_won_lost_won
+        forced_lost_lost_won_won = forced[4][1][1][0][0]/sum(forced[4][1][1][0])
+        forced_lost_lost_won_lost = 1-forced_lost_lost_won_won
+        forced_lost_lost_lost_won = forced[4][1][1][1][0]/sum(forced[4][1][1][1])
+        forced_lost_lost_lost_lost = 1-forced_lost_lost_lost_won
 
-    not_forced_won_won_won_won = not_forced[4][0][0][0][0]/sum(not_forced[4][0][0][0])
-    not_forced_won_won_won_lost = 1-not_forced_won_won_won_won
-    not_forced_won_won_lost_won = not_forced[4][0][0][1][0]/sum(not_forced[4][0][0][1])
-    not_forced_won_won_lost_lost = 1-not_forced_won_won_lost_won
-    not_forced_won_lost_won_won = not_forced[4][0][1][0][0]/sum(not_forced[4][0][1][0])
-    not_forced_won_lost_won_lost = 1-not_forced_won_lost_won_won
-    not_forced_won_lost_lost_won = not_forced[4][0][1][1][0]/sum(not_forced[4][0][1][1])
-    not_forced_won_lost_lost_lost = 1-not_forced_won_lost_lost_won
-    not_forced_lost_won_won_won = not_forced[4][1][0][0][0]/sum(not_forced[4][1][0][0])
-    not_forced_lost_won_won_lost = 1-not_forced_lost_won_won_won
-    not_forced_lost_won_lost_won = not_forced[4][1][0][1][0]/sum(not_forced[4][1][0][1])
-    not_forced_lost_won_lost_lost = 1-not_forced_lost_won_lost_won
-    not_forced_lost_lost_won_won = not_forced[4][1][1][0][0]/sum(not_forced[4][1][1][0])
-    not_forced_lost_lost_won_lost = 1-not_forced_lost_lost_won_won
-    not_forced_lost_lost_lost_won = not_forced[4][1][1][1][0]/sum(not_forced[4][1][1][1])
-    not_forced_lost_lost_lost_lost = 1-not_forced_lost_lost_lost_won
+        not_forced_won_won_won_won = not_forced[4][0][0][0][0]/sum(not_forced[4][0][0][0])
+        not_forced_won_won_won_lost = 1-not_forced_won_won_won_won
+        not_forced_won_won_lost_won = not_forced[4][0][0][1][0]/sum(not_forced[4][0][0][1])
+        not_forced_won_won_lost_lost = 1-not_forced_won_won_lost_won
+        not_forced_won_lost_won_won = not_forced[4][0][1][0][0]/sum(not_forced[4][0][1][0])
+        not_forced_won_lost_won_lost = 1-not_forced_won_lost_won_won
+        not_forced_won_lost_lost_won = not_forced[4][0][1][1][0]/sum(not_forced[4][0][1][1])
+        not_forced_won_lost_lost_lost = 1-not_forced_won_lost_lost_won
+        not_forced_lost_won_won_won = not_forced[4][1][0][0][0]/sum(not_forced[4][1][0][0])
+        not_forced_lost_won_won_lost = 1-not_forced_lost_won_won_won
+        not_forced_lost_won_lost_won = not_forced[4][1][0][1][0]/sum(not_forced[4][1][0][1])
+        not_forced_lost_won_lost_lost = 1-not_forced_lost_won_lost_won
+        not_forced_lost_lost_won_won = not_forced[4][1][1][0][0]/sum(not_forced[4][1][1][0])
+        not_forced_lost_lost_won_lost = 1-not_forced_lost_lost_won_won
+        not_forced_lost_lost_lost_won = not_forced[4][1][1][1][0]/sum(not_forced[4][1][1][1])
+        not_forced_lost_lost_lost_lost = 1-not_forced_lost_lost_lost_won
 
-    forced_chance_4_1 = forced_won*forced_won_won*forced_won_won_won*forced_won_won_won_won
-    forced_chance_3_2 = forced_won*forced_won_won*forced_won_won_won*forced_won_won_won_lost + forced_won*forced_won_won*forced_won_won_lost*forced_won_won_lost_won + forced_won*forced_won_lost*forced_won_lost_won*forced_won_lost_won_won + forced_lost*forced_lost_won*forced_lost_won_won*forced_lost_won_won_won
-    forced_chance_2_3 = forced_won*forced_won_won*forced_won_won_lost*forced_won_won_lost_lost + forced_won*forced_won_lost*forced_won_lost_won*forced_won_lost_won_lost + forced_won*forced_won_lost*forced_won_lost_lost*forced_won_lost_lost_won + forced_lost*forced_lost_won*forced_lost_won_won*forced_lost_won_won_lost + forced_lost*forced_lost_won*forced_lost_won_lost*forced_lost_won_lost_won + forced_lost*forced_lost_lost*forced_lost_lost_won*forced_lost_lost_won_won
-    forced_chance_1_4 = forced_won*forced_won_lost*forced_won_lost_lost*forced_won_lost_lost_lost + forced_lost*forced_lost_won*forced_lost_won_lost*forced_lost_won_lost_lost + forced_lost*forced_lost_lost*forced_lost_lost_won*forced_lost_lost_won_lost + forced_lost*forced_lost_lost*forced_lost_lost_lost*forced_lost_lost_lost_won
-    forced_chance_0_5 = forced_lost*forced_lost_lost*forced_lost_lost_lost*forced_lost_lost_lost_lost
+        forced_chance_4_1 = forced_won*forced_won_won*forced_won_won_won*forced_won_won_won_won
+        forced_chance_3_2 = forced_won*forced_won_won*forced_won_won_won*forced_won_won_won_lost + forced_won*forced_won_won*forced_won_won_lost*forced_won_won_lost_won + forced_won*forced_won_lost*forced_won_lost_won*forced_won_lost_won_won + forced_lost*forced_lost_won*forced_lost_won_won*forced_lost_won_won_won
+        forced_chance_2_3 = forced_won*forced_won_won*forced_won_won_lost*forced_won_won_lost_lost + forced_won*forced_won_lost*forced_won_lost_won*forced_won_lost_won_lost + forced_won*forced_won_lost*forced_won_lost_lost*forced_won_lost_lost_won + forced_lost*forced_lost_won*forced_lost_won_won*forced_lost_won_won_lost + forced_lost*forced_lost_won*forced_lost_won_lost*forced_lost_won_lost_won + forced_lost*forced_lost_lost*forced_lost_lost_won*forced_lost_lost_won_won
+        forced_chance_1_4 = forced_won*forced_won_lost*forced_won_lost_lost*forced_won_lost_lost_lost + forced_lost*forced_lost_won*forced_lost_won_lost*forced_lost_won_lost_lost + forced_lost*forced_lost_lost*forced_lost_lost_won*forced_lost_lost_won_lost + forced_lost*forced_lost_lost*forced_lost_lost_lost*forced_lost_lost_lost_won
+        forced_chance_0_5 = forced_lost*forced_lost_lost*forced_lost_lost_lost*forced_lost_lost_lost_lost
 
-    not_forced_chance_4_1 = not_forced_won*not_forced_won_won*not_forced_won_won_won*not_forced_won_won_won_won
-    not_forced_chance_3_2 = not_forced_won*not_forced_won_won*not_forced_won_won_won*not_forced_won_won_won_lost + not_forced_won*not_forced_won_won*not_forced_won_won_lost*not_forced_won_won_lost_won + not_forced_won*not_forced_won_lost*not_forced_won_lost_won*not_forced_won_lost_won_won + not_forced_lost*not_forced_lost_won*not_forced_lost_won_won*not_forced_lost_won_won_won
-    not_forced_chance_2_3 = not_forced_won*not_forced_won_won*not_forced_won_won_lost*not_forced_won_won_lost_lost + not_forced_won*not_forced_won_lost*not_forced_won_lost_won*not_forced_won_lost_won_lost + not_forced_won*not_forced_won_lost*not_forced_won_lost_lost*not_forced_won_lost_lost_won + not_forced_lost*not_forced_lost_won*not_forced_lost_won_won*not_forced_lost_won_won_lost + not_forced_lost*not_forced_lost_won*not_forced_lost_won_lost*not_forced_lost_won_lost_won + not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_won*not_forced_lost_lost_won_won
-    not_forced_chance_1_4 = not_forced_won*not_forced_won_lost*not_forced_won_lost_lost*not_forced_won_lost_lost_lost + not_forced_lost*not_forced_lost_won*not_forced_lost_won_lost*not_forced_lost_won_lost_lost + not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_won*not_forced_lost_lost_won_lost + not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_lost*not_forced_lost_lost_lost_won
-    not_forced_chance_0_5 = not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_lost*not_forced_lost_lost_lost_lost
+        not_forced_chance_4_1 = not_forced_won*not_forced_won_won*not_forced_won_won_won*not_forced_won_won_won_won
+        not_forced_chance_3_2 = not_forced_won*not_forced_won_won*not_forced_won_won_won*not_forced_won_won_won_lost + not_forced_won*not_forced_won_won*not_forced_won_won_lost*not_forced_won_won_lost_won + not_forced_won*not_forced_won_lost*not_forced_won_lost_won*not_forced_won_lost_won_won + not_forced_lost*not_forced_lost_won*not_forced_lost_won_won*not_forced_lost_won_won_won
+        not_forced_chance_2_3 = not_forced_won*not_forced_won_won*not_forced_won_won_lost*not_forced_won_won_lost_lost + not_forced_won*not_forced_won_lost*not_forced_won_lost_won*not_forced_won_lost_won_lost + not_forced_won*not_forced_won_lost*not_forced_won_lost_lost*not_forced_won_lost_lost_won + not_forced_lost*not_forced_lost_won*not_forced_lost_won_won*not_forced_lost_won_won_lost + not_forced_lost*not_forced_lost_won*not_forced_lost_won_lost*not_forced_lost_won_lost_won + not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_won*not_forced_lost_lost_won_won
+        not_forced_chance_1_4 = not_forced_won*not_forced_won_lost*not_forced_won_lost_lost*not_forced_won_lost_lost_lost + not_forced_lost*not_forced_lost_won*not_forced_lost_won_lost*not_forced_lost_won_lost_lost + not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_won*not_forced_lost_lost_won_lost + not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_lost*not_forced_lost_lost_lost_won
+        not_forced_chance_0_5 = not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_lost*not_forced_lost_lost_lost_lost
 
-    print("--------------------------------")
-    print(f"chance of going 4-1 if you force: {forced_chance_4_1*100:.2f}%")
-    print(f"chance of going 3-2 if you force: {forced_chance_3_2*100:.2f}%")
-    print(f"chance of going 2-3 if you force: {forced_chance_2_3*100:.2f}%")
-    print(f"chance of going 1-4 if you force: {forced_chance_1_4*100:.2f}%")
-    print(f"chance of going 0-5 if you force: {forced_chance_0_5*100:.2f}%")
-    print("--------------------------------")
-    print(f"chance of going 4-1 if you don't force: {not_forced_chance_4_1*100:.2f}%")
-    print(f"chance of going 3-2 if you don't force: {not_forced_chance_3_2*100:.2f}%")
-    print(f"chance of going 2-3 if you don't force: {not_forced_chance_2_3*100:.2f}%")
-    print(f"chance of going 1-4 if you don't force: {not_forced_chance_1_4*100:.2f}%")
-    print(f"chance of going 0-5 if you don't force: {not_forced_chance_0_5*100:.2f}%")
-    print("--------------------------------")
-    if "money" in args:
-        print(f"average money after going 4-1 if you force: {forced_money[3][0]/forced_scores[3][0]:.1f}k")
-        print(f"average money after going 3-2 if you force: {forced_money[3][1]/forced_scores[3][1]:.1f}k")
-        print(f"average money after going 2-3 if you force: {forced_money[3][2]/forced_scores[3][2]:.1f}k")
-        print(f"average money after going 1-4 if you force: {forced_money[3][3]/forced_scores[3][3]:.1f}k")
-        print(f"average money after going 0-5 if you force: {forced_money[3][4]/forced_scores[3][4]:.1f}k")
-        print("--------------------------------")
-        print(f"average money after going 4-1 if you don't force: {not_forced_money[3][0]/not_forced_scores[3][0]:.1f}k")
-        print(f"average money after going 3-2 if you don't force: {not_forced_money[3][1]/not_forced_scores[3][1]:.1f}k")
-        print(f"average money after going 2-3 if you don't force: {not_forced_money[3][2]/not_forced_scores[3][2]:.1f}k")
-        print(f"average money after going 1-4 if you don't force: {not_forced_money[3][3]/not_forced_scores[3][3]:.1f}k")
-        print(f"average money after going 0-5 if you don't force: {not_forced_money[3][4]/not_forced_scores[3][4]:.1f}k")
+        output += "--------------------------------" + "\n"
+        output += f"chance of going 4-1 if you force: {forced_chance_4_1*100:.2f}%" + "\n"
+        output += f"chance of going 3-2 if you force: {forced_chance_3_2*100:.2f}%" + "\n"
+        output += f"chance of going 2-3 if you force: {forced_chance_2_3*100:.2f}%" + "\n"
+        output += f"chance of going 1-4 if you force: {forced_chance_1_4*100:.2f}%" + "\n"
+        output += f"chance of going 0-5 if you force: {forced_chance_0_5*100:.2f}%" + "\n"
+        output += "--------------------------------" + "\n"
+        output += f"chance of going 4-1 if you don't force: {not_forced_chance_4_1*100:.2f}%" + "\n"
+        output += f"chance of going 3-2 if you don't force: {not_forced_chance_3_2*100:.2f}%" + "\n"
+        output += f"chance of going 2-3 if you don't force: {not_forced_chance_2_3*100:.2f}%" + "\n"
+        output += f"chance of going 1-4 if you don't force: {not_forced_chance_1_4*100:.2f}%" + "\n"
+        output += f"chance of going 0-5 if you don't force: {not_forced_chance_0_5*100:.2f}%" + "\n"
+        output += "--------------------------------" + "\n"
+        if "money" in args:
+            output += f"average money after going 4-1 if you force: {forced_money[3][0]/forced_scores[3][0]:.1f}k" + "\n"
+            output += f"average money after going 3-2 if you force: {forced_money[3][1]/forced_scores[3][1]:.1f}k" + "\n"
+            output += f"average money after going 2-3 if you force: {forced_money[3][2]/forced_scores[3][2]:.1f}k" + "\n"
+            output += f"average money after going 1-4 if you force: {forced_money[3][3]/forced_scores[3][3]:.1f}k" + "\n"
+            output += f"average money after going 0-5 if you force: {forced_money[3][4]/forced_scores[3][4]:.1f}k" + "\n"
+            output += "--------------------------------" + "\n"
+            output += f"average money after going 4-1 if you don't force: {not_forced_money[3][0]/not_forced_scores[3][0]:.1f}k" + "\n"
+            output += f"average money after going 3-2 if you don't force: {not_forced_money[3][1]/not_forced_scores[3][1]:.1f}k" + "\n"
+            output += f"average money after going 2-3 if you don't force: {not_forced_money[3][2]/not_forced_scores[3][2]:.1f}k" + "\n"
+            output += f"average money after going 1-4 if you don't force: {not_forced_money[3][3]/not_forced_scores[3][3]:.1f}k" + "\n"
+            output += f"average money after going 0-5 if you don't force: {not_forced_money[3][4]/not_forced_scores[3][4]:.1f}k" + "\n"
+
+        print(output)
+    except:
+        print("Not enough data for chosen arguments.")
 
 def printTeamResults(teamForceSuccessRate):
     # team specific data
@@ -366,12 +390,23 @@ if __name__ == "__main__":
                     args["second"] = True
                 case "money":
                     args["money"] = True
+                case "planted":
+                    args["planted"] = True
+                case "help":
+                    args["help"] = True
+                case "bad":
+                    args["bad"] = True
+                case _:
+                    print(f"Argument {argument.lower()} not recognized. Run ./analyze -h for a list of valid arguments.")
+                    exit(1)
         else: # it's a single - command, so might be multiple commands in one
             i = 1
             while i < len(argument):
                 match argument[i].lower():
                     case "a":
                         args["attack"] = True
+                    case "b":
+                        args["bad"] = True
                     case "d":
                         args["defense"] = True
                     case "t":
@@ -386,9 +421,19 @@ if __name__ == "__main__":
                         args["second"] = True
                     case "m":
                         args["money"] = True
+                    case "p":
+                        args["planted"] = True
+                    case "h":
+                        args["help"] = True
+                    case _:
+                        print(f"Argument {argument.lower()} not recognized. Run ./analyze -h for a list of valid arguments.")
+                        exit(1)
                 i += 1
 
 
+    if "help" in args:
+        print("TODO")
+        exit(1)
     if "attack" in args and "defense" in args:
         print("You can't specify only attack and only defense. If you want to show the data for both sides, use neither argument.")
         exit(1)
@@ -398,12 +443,10 @@ if __name__ == "__main__":
     if "round4" in args and "round5" in args:
         print("You can't specify going up to round 4 and round 5 at once. If you want to show the data up to round 5, use only -r5 or --round5.")
         exit(1)
-    if "maps" in args and "vcl" not in args and ("round4" in args or "round5" in args):
-        print("Not enough individual map data for chosen restrictions.")
+    if "planted" in args and ("attack" in args or "defense" in args):
+        print("You can't specify planted and a half. If you only want the data when the team that lost pistol was on attack and planted, use only --planted or -p. If you only want the data when the teamt that won pistol was on attack and planted, that data currently isn't available.")
         exit(1)
-    if "maps" in args and "vcl" in args and "round5" in args:
-        print("Not enough individual map data for chosen restrictions.")
-        exit(1)
+    
 
 
     if "vcl" in args:
