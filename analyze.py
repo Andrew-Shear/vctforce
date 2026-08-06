@@ -2,6 +2,7 @@
 import copy
 import orjson
 import sys
+import re
 
 forced_template = [0, [0, 0], [[0, 0], [0, 0]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]]] # [#won, [won, lost], [[wonwon, wonlost], [lostwon, lostlost]], etc.]
 not_forced_template = [0, [0, 0], [[0, 0], [0, 0]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]]] # [#won, [won, lost], [[wonwon, wonlost], [lostwon, lostlost]], etc.]
@@ -82,6 +83,10 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
     roundSpent = game["roundSpent"]
     roundEco = game["roundEcos"]
     roundWinMethods = game["roundWinMethods"]
+
+    if "year" in args:
+        if game["year"] != args["year"]:
+            return
 
     roundLossesIndex = [1 if r[0] == teams[0] else 0 for r in roundWins]
     halfRange = (0,12)
@@ -400,6 +405,8 @@ if __name__ == "__main__":
                     args["help"] = True
                 case "bad":
                     args["bad"] = True
+                case str() if re.fullmatch(r"year=\d+", argument[2:].lower()):
+                    args["year"] = re.fullmatch(r"year=(\d+)", argument[2:].lower()).group(1)
                 case _:
                     print(f"Argument {argument.lower()} not recognized. Run ./analyze -h for a list of valid arguments.")
                     exit(1)
@@ -450,6 +457,9 @@ if __name__ == "__main__":
     if "planted" in args and ("attack" in args or "defense" in args):
         print("You can't specify planted and a half. If you only want the data when the team that lost pistol was on attack and planted, use only --planted or -p. If you only want the data when the teamt that won pistol was on attack and planted, that data currently isn't available.")
         exit(1)
+    if "year" in args and (int(args["year"]) > 2026 or int(args["year"]) < 2023):
+            print("The year argument must be from 2023 to 2026. Format it as --year=202x.")
+            exit(1)
     
 
 
