@@ -96,6 +96,7 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
         loserIndex = roundLossesIndex[startingIndex]
         moneySaved2nd = float(roundEco[startingIndex+1][loserIndex])
 
+
         
         # are you on attack or defense?
         if "attack" in args and roundWins[startingIndex][1] == 't' or "defense" in args and roundWins[startingIndex][1] == 'ct':
@@ -120,6 +121,9 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
         #if current == forced:
         #    print(f"https://www.vlr.gg/{game["matchID"]}?game={game["gameID"]}")
         #    print(roundWins)
+
+        #if teams[loserIndex] == "G2" and current == forced:
+        #    print(f"https://www.vlr.gg/{game["matchID"]}?game={game["gameID"]}&tab=economy")
 
 
         # 0 if you won, 1 if you lost
