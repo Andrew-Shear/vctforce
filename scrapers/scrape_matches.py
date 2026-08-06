@@ -3,8 +3,8 @@ import re
 import time
 import json
 from bs4 import BeautifulSoup
-import random
 from VCL_data import VCL_events
+import random
 
 #events = ["1924", "2097", "2095", "2096", "2005", "2094", "1999", "2006", "2004", "1998", "2002", "1921", "1923", "1926", "1925"] # 2024
 #events += ["1657", "1658", "1659", "1660", "1664", "1494", "1189", "1190", "1191", "1188"] # 2023
@@ -45,16 +45,14 @@ with open("VCL_data/VCL_matchIDs.py", "w") as file:
             exit(1)
         soup = BeautifulSoup(response.text, 'html.parser')
         divs = soup.find('div', class_='mod-1').find_all('div', recursive=False) # date, matches, date, matches
-        print(divs[2])
 
-        for i in range(2, len(divs), 2):
-            date = divs[i].text.strip()
-            print(date)
+        for j in range(2, len(divs), 2):
+            date = divs[j].text.strip()
             match = re.match(r"\w+, (\w+) (\d+), (\d+)", date)
             month, day, year = match.group(1), match.group(2), match.group(3)
 
 
-            for match in divs[i+1].find_all('a'):
+            for match in divs[j+1].find_all('a'):
                 matchID = re.match(r"/(\d+)/.*", match["href"]).group(1)
                 file.write(str({"matchID": matchID,
                             "year": year,
