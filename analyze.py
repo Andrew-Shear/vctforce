@@ -117,18 +117,19 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
         # did you plant?
         if "planted" in args and not (roundWins[startingIndex][1] == 'ct' and roundWinMethods[startingIndex] == 'defuse'):
             continue
+
+        if "attacknotplanted" in args and not (roundWins[startingIndex][1] == 'ct' and roundWinMethods[startingIndex] != 'defuse'):
+            continue
         
         
         current = forced if moneySaved2nd < 4.5 else not_forced # 4.5k
         current_scores = forced_scores if moneySaved2nd < 4.5 else not_forced_scores # 4.5k
         current_money = forced_money if moneySaved2nd < 4.5 else not_forced_money # 4.5k
         current[0] += 1
-        #if current == forced:
-        #    print(f"https://www.vlr.gg/{game["matchID"]}?game={game["gameID"]}")
-        #    print(roundWins)
 
-        #if teams[loserIndex] == "G2" and current == forced:
+        #if teams[loserIndex] == "G2" and current == forced and game["year"] == "2026":
         #    print(f"https://www.vlr.gg/{game["matchID"]}?game={game["gameID"]}&tab=economy")
+
 
 
         # 0 if you won, 1 if you lost
@@ -136,6 +137,9 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
         current[1][won2nd] += 1
         current_scores[0][won2nd] += 1
         current_money[0][won2nd] += float(roundEco[startingIndex+1][loserIndex])
+
+        #if current == forced and won2nd == 1:
+        #    print(f"https://www.vlr.gg/{game["matchID"]}?game={game["gameID"]}&tab=economy")
 
         # specific team data
         if "teams" in args:
@@ -192,38 +196,38 @@ def printResults(forced, not_forced, forced_money, not_forced_money, forced_scor
         not_forced_lost_won = not_forced[2][1][0]/sum(not_forced[2][1])
         not_forced_lost_lost = 1-not_forced_lost_won 
 
-        output += f"number of 2nd rounds analyzed: {forced[0] + not_forced[0]}" + "\n"
-        output += f"number of 2nd rounds forced: {forced[0]}" + "\n"
-        output += f"percentage of 2nd rounds forced: {forced_percent*100:.2f}%" + "\n"
-        output += "--------------------------------" + "\n"
-        output += f"percentage of forced 2nd rounds won: {forced_won*100:.2f}%" + "\n"
-        output += f"percentage of forced 2nd rounds lost: {forced_lost*100:.2f}%" + "\n"
-        output += f"percentage of 3rd rounds won after forcing and winning: {forced_won_won*100:.2f}%" + "\n"
-        output += f"percentage of 3rd rounds won after forcing and losing: {forced_lost_won*100:.2f}%" + "\n"
-        output += "--------------------------------" + "\n"
-        output += f"percentage of non forced 2nd rounds won: {not_forced_won*100:.2f}%" + "\n"
-        output += f"percentage of non forced 2nd rounds lost: {not_forced_lost*100:.2f}%" + "\n"
-        output += f"percentage of 3rd rounds won after not forcing and winning: {not_forced_won_won*100:.2f}%" + "\n"
-        output += f"percentage of 3rd rounds won after not forcing and losing: {not_forced_lost_won*100:.2f}%" + "\n"
-        output += "--------------------------------" + "\n"
-        output += "--------------------------------" + "\n"
-        output += f"chance of going 2-1 if you force: {(forced_won*forced_won_won)*100:.2f}%" + "\n"
-        output += f"chance of going 1-2 if you force: {(forced_won*forced_won_lost + forced_lost*forced_lost_won)*100:.2f}%" + "\n"
-        output += f"chance of going 0-3 if you force: {forced_lost*forced_lost_lost*100:.2f}%" + "\n"
-        output += "--------------------------------" + "\n"
-        output += f"chance of going 2-1 if you don't force: {(not_forced_won*not_forced_won_won)*100:.2f}%" + "\n"
-        output += f"chance of going 1-2 if you don't force: {(not_forced_won*not_forced_won_lost + not_forced_lost*not_forced_lost_won)*100:.2f}%" + "\n"
-        output += f"chance of going 0-3 if you don't force: {not_forced_lost*not_forced_lost_lost*100:.2f}%" + "\n"
-        output += "--------------------------------" + "\n"
+        output += f"number of 2nd rounds analyzed: {forced[0] + not_forced[0]}\n"
+        output += f"number of 2nd rounds forced: {forced[0]}\n"
+        output += f"percentage of 2nd rounds forced: {forced_percent*100:.2f}%\n"
+        output += "--------------------------------\n"
+        output += f"percentage of forced 2nd rounds won: {forced_won*100:.2f}%\n"
+        output += f"percentage of forced 2nd rounds lost: {forced_lost*100:.2f}%\n"
+        output += f"percentage of 3rd rounds won after forcing and winning: {forced_won_won*100:.2f}%\n"
+        output += f"percentage of 3rd rounds won after forcing and losing: {forced_lost_won*100:.2f}%\n"
+        output += "--------------------------------\n"
+        output += f"percentage of non forced 2nd rounds won: {not_forced_won*100:.2f}%\n"
+        output += f"percentage of non forced 2nd rounds lost: {not_forced_lost*100:.2f}%\n"
+        output += f"percentage of 3rd rounds won after not forcing and winning: {not_forced_won_won*100:.2f}%\n"
+        output += f"percentage of 3rd rounds won after not forcing and losing: {not_forced_lost_won*100:.2f}%\n"
+        output += "--------------------------------\n"
+        output += "--------------------------------\n"
+        output += f"chance of going 2-1 if you force: {(forced_won*forced_won_won)*100:.2f}%\n"
+        output += f"chance of going 1-2 if you force: {(forced_won*forced_won_lost + forced_lost*forced_lost_won)*100:.2f}%\n"
+        output += f"chance of going 0-3 if you force: {forced_lost*forced_lost_lost*100:.2f}%\n"
+        output += "--------------------------------\n"
+        output += f"chance of going 2-1 if you don't force: {(not_forced_won*not_forced_won_won)*100:.2f}%\n"
+        output += f"chance of going 1-2 if you don't force: {(not_forced_won*not_forced_won_lost + not_forced_lost*not_forced_lost_won)*100:.2f}%\n"
+        output += f"chance of going 0-3 if you don't force: {not_forced_lost*not_forced_lost_lost*100:.2f}%\n"
+        output += "--------------------------------\n"
         if "money" in args:
-            output += f"average money after going 2-1 if you force: {forced_money[1][0]/forced_scores[1][0]:.1f}k" + "\n"
-            output += f"average money after going 1-2 if you force: {forced_money[1][1]/forced_scores[1][1]:.1f}k" + "\n"
-            output += f"average money after going 0-3 if you force: {forced_money[1][2]/forced_scores[1][2]:.1f}k" + "\n"
-            output += "--------------------------------" + "\n"
-            output += f"average money after going 2-1 if you don't force: {not_forced_money[1][0]/not_forced_scores[1][0]:.1f}k" + "\n"
-            output += f"average money after going 1-2 if you don't force: {not_forced_money[1][1]/not_forced_scores[1][1]:.1f}k" + "\n"
-            output += f"average money after going 0-3 if you don't force: {not_forced_money[1][2]/not_forced_scores[1][2]:.1f}k" + "\n"
-            output += "--------------------------------" + "\n"
+            output += f"average money after going 2-1 if you force: {forced_money[1][0]/forced_scores[1][0]:.1f}k\n"
+            output += f"average money after going 1-2 if you force: {forced_money[1][1]/forced_scores[1][1]:.1f}k\n"
+            output += f"average money after going 0-3 if you force: {forced_money[1][2]/forced_scores[1][2]:.1f}k\n"
+            output += "--------------------------------\n"
+            output += f"average money after going 2-1 if you don't force: {not_forced_money[1][0]/not_forced_scores[1][0]:.1f}k\n"
+            output += f"average money after going 1-2 if you don't force: {not_forced_money[1][1]/not_forced_scores[1][1]:.1f}k\n"
+            output += f"average money after going 0-3 if you don't force: {not_forced_money[1][2]/not_forced_scores[1][2]:.1f}k\n"
+            output += "--------------------------------\n"
 
         if "round4" not in args and "round5" not in args:
             print(output)
@@ -258,28 +262,28 @@ def printResults(forced, not_forced, forced_money, not_forced_money, forced_scor
         not_forced_chance_0_4 = not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_lost
 
 
-        output += "--------------------------------" + "\n"
-        output += f"chance of going 3-1 if you force: {forced_chance_3_1*100:.2f}%" + "\n"
-        output += f"chance of going 2-2 if you force: {forced_chance_2_2*100:.2f}%" + "\n"
-        output += f"chance of going 1-3 if you force: {forced_chance_1_3*100:.2f}%" + "\n"
-        output += f"chance of going 0-4 if you force: {forced_chance_0_4*100:.2f}%" + "\n"
-        output += "--------------------------------" + "\n"
-        output += f"chance of going 3-1 if you don't force: {not_forced_chance_3_1*100:.2f}%" + "\n"
-        output += f"chance of going 2-2 if you don't force: {not_forced_chance_2_2*100:.2f}%" + "\n"
-        output += f"chance of going 1-3 if you don't force: {not_forced_chance_1_3*100:.2f}%" + "\n"
-        output += f"chance of going 0-4 if you don't force: {not_forced_chance_0_4*100:.2f}%" + "\n"
-        output += "--------------------------------" + "\n"
+        output += "--------------------------------\n"
+        output += f"chance of going 3-1 if you force: {forced_chance_3_1*100:.2f}%\n"
+        output += f"chance of going 2-2 if you force: {forced_chance_2_2*100:.2f}%\n"
+        output += f"chance of going 1-3 if you force: {forced_chance_1_3*100:.2f}%\n"
+        output += f"chance of going 0-4 if you force: {forced_chance_0_4*100:.2f}%\n"
+        output += "--------------------------------\n"
+        output += f"chance of going 3-1 if you don't force: {not_forced_chance_3_1*100:.2f}%\n"
+        output += f"chance of going 2-2 if you don't force: {not_forced_chance_2_2*100:.2f}%\n"
+        output += f"chance of going 1-3 if you don't force: {not_forced_chance_1_3*100:.2f}%\n"
+        output += f"chance of going 0-4 if you don't force: {not_forced_chance_0_4*100:.2f}%\n"
+        output += "--------------------------------\n"
         if "money" in args:
-            output += f"average money after going 3-1 if you force: {forced_money[2][0]/forced_scores[2][0]:.1f}k" + "\n"
-            output += f"average money after going 2-2 if you force: {forced_money[2][1]/forced_scores[2][1]:.1f}k" + "\n"
-            output += f"average money after going 1-3 if you force: {forced_money[2][2]/forced_scores[2][2]:.1f}k" + "\n"
-            output += f"average money after going 0-4 if you force: {forced_money[2][3]/forced_scores[2][3]:.1f}k" + "\n"
-            output += "--------------------------------" + "\n"
-            output += f"average money after going 3-1 if you don't force: {not_forced_money[2][0]/not_forced_scores[2][0]:.1f}k" + "\n"
-            output += f"average money after going 2-2 if you don't force: {not_forced_money[2][1]/not_forced_scores[2][1]:.1f}k" + "\n"
-            output += f"average money after going 1-3 if you don't force: {not_forced_money[2][2]/not_forced_scores[2][2]:.1f}k" + "\n"
-            output += f"average money after going 0-4 if you don't force: {not_forced_money[2][3]/not_forced_scores[2][3]:.1f}k" + "\n"
-            output += "--------------------------------" + "\n"
+            output += f"average money after going 3-1 if you force: {forced_money[2][0]/forced_scores[2][0]:.1f}k\n"
+            output += f"average money after going 2-2 if you force: {forced_money[2][1]/forced_scores[2][1]:.1f}k\n"
+            output += f"average money after going 1-3 if you force: {forced_money[2][2]/forced_scores[2][2]:.1f}k\n"
+            output += f"average money after going 0-4 if you force: {forced_money[2][3]/forced_scores[2][3]:.1f}k\n"
+            output += "--------------------------------\n"
+            output += f"average money after going 3-1 if you don't force: {not_forced_money[2][0]/not_forced_scores[2][0]:.1f}k\n"
+            output += f"average money after going 2-2 if you don't force: {not_forced_money[2][1]/not_forced_scores[2][1]:.1f}k\n"
+            output += f"average money after going 1-3 if you don't force: {not_forced_money[2][2]/not_forced_scores[2][2]:.1f}k\n"
+            output += f"average money after going 0-4 if you don't force: {not_forced_money[2][3]/not_forced_scores[2][3]:.1f}k\n"
+            output += "--------------------------------\n"
 
         if "round5" not in args:
             print(output)
@@ -331,35 +335,38 @@ def printResults(forced, not_forced, forced_money, not_forced_money, forced_scor
         not_forced_chance_1_4 = not_forced_won*not_forced_won_lost*not_forced_won_lost_lost*not_forced_won_lost_lost_lost + not_forced_lost*not_forced_lost_won*not_forced_lost_won_lost*not_forced_lost_won_lost_lost + not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_won*not_forced_lost_lost_won_lost + not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_lost*not_forced_lost_lost_lost_won
         not_forced_chance_0_5 = not_forced_lost*not_forced_lost_lost*not_forced_lost_lost_lost*not_forced_lost_lost_lost_lost
 
-        output += "--------------------------------" + "\n"
-        output += f"chance of going 4-1 if you force: {forced_chance_4_1*100:.2f}%" + "\n"
-        output += f"chance of going 3-2 if you force: {forced_chance_3_2*100:.2f}%" + "\n"
-        output += f"chance of going 2-3 if you force: {forced_chance_2_3*100:.2f}%" + "\n"
-        output += f"chance of going 1-4 if you force: {forced_chance_1_4*100:.2f}%" + "\n"
-        output += f"chance of going 0-5 if you force: {forced_chance_0_5*100:.2f}%" + "\n"
-        output += "--------------------------------" + "\n"
-        output += f"chance of going 4-1 if you don't force: {not_forced_chance_4_1*100:.2f}%" + "\n"
-        output += f"chance of going 3-2 if you don't force: {not_forced_chance_3_2*100:.2f}%" + "\n"
-        output += f"chance of going 2-3 if you don't force: {not_forced_chance_2_3*100:.2f}%" + "\n"
-        output += f"chance of going 1-4 if you don't force: {not_forced_chance_1_4*100:.2f}%" + "\n"
-        output += f"chance of going 0-5 if you don't force: {not_forced_chance_0_5*100:.2f}%" + "\n"
-        output += "--------------------------------" + "\n"
+        output += "--------------------------------\n"
+        output += f"chance of going 4-1 if you force: {forced_chance_4_1*100:.2f}%\n"
+        output += f"chance of going 3-2 if you force: {forced_chance_3_2*100:.2f}%\n"
+        output += f"chance of going 2-3 if you force: {forced_chance_2_3*100:.2f}%\n"
+        output += f"chance of going 1-4 if you force: {forced_chance_1_4*100:.2f}%\n"
+        output += f"chance of going 0-5 if you force: {forced_chance_0_5*100:.2f}%\n"
+        output += "--------------------------------\n"
+        output += f"chance of going 4-1 if you don't force: {not_forced_chance_4_1*100:.2f}%\n"
+        output += f"chance of going 3-2 if you don't force: {not_forced_chance_3_2*100:.2f}%\n"
+        output += f"chance of going 2-3 if you don't force: {not_forced_chance_2_3*100:.2f}%\n"
+        output += f"chance of going 1-4 if you don't force: {not_forced_chance_1_4*100:.2f}%\n"
+        output += f"chance of going 0-5 if you don't force: {not_forced_chance_0_5*100:.2f}%\n"
+        output += "--------------------------------\n"
         if "money" in args:
-            output += f"average money after going 4-1 if you force: {forced_money[3][0]/forced_scores[3][0]:.1f}k" + "\n"
-            output += f"average money after going 3-2 if you force: {forced_money[3][1]/forced_scores[3][1]:.1f}k" + "\n"
-            output += f"average money after going 2-3 if you force: {forced_money[3][2]/forced_scores[3][2]:.1f}k" + "\n"
-            output += f"average money after going 1-4 if you force: {forced_money[3][3]/forced_scores[3][3]:.1f}k" + "\n"
-            output += f"average money after going 0-5 if you force: {forced_money[3][4]/forced_scores[3][4]:.1f}k" + "\n"
-            output += "--------------------------------" + "\n"
-            output += f"average money after going 4-1 if you don't force: {not_forced_money[3][0]/not_forced_scores[3][0]:.1f}k" + "\n"
-            output += f"average money after going 3-2 if you don't force: {not_forced_money[3][1]/not_forced_scores[3][1]:.1f}k" + "\n"
-            output += f"average money after going 2-3 if you don't force: {not_forced_money[3][2]/not_forced_scores[3][2]:.1f}k" + "\n"
-            output += f"average money after going 1-4 if you don't force: {not_forced_money[3][3]/not_forced_scores[3][3]:.1f}k" + "\n"
-            output += f"average money after going 0-5 if you don't force: {not_forced_money[3][4]/not_forced_scores[3][4]:.1f}k" + "\n"
+            output += f"average money after going 4-1 if you force: {forced_money[3][0]/forced_scores[3][0]:.1f}k\n"
+            output += f"average money after going 3-2 if you force: {forced_money[3][1]/forced_scores[3][1]:.1f}k\n"
+            output += f"average money after going 2-3 if you force: {forced_money[3][2]/forced_scores[3][2]:.1f}k\n"
+            output += f"average money after going 1-4 if you force: {forced_money[3][3]/forced_scores[3][3]:.1f}k\n"
+            output += f"average money after going 0-5 if you force: {forced_money[3][4]/forced_scores[3][4]:.1f}k\n"
+            output += "--------------------------------\n"
+            output += f"average money after going 4-1 if you don't force: {not_forced_money[3][0]/not_forced_scores[3][0]:.1f}k\n"
+            output += f"average money after going 3-2 if you don't force: {not_forced_money[3][1]/not_forced_scores[3][1]:.1f}k\n"
+            output += f"average money after going 2-3 if you don't force: {not_forced_money[3][2]/not_forced_scores[3][2]:.1f}k\n"
+            output += f"average money after going 1-4 if you don't force: {not_forced_money[3][3]/not_forced_scores[3][3]:.1f}k\n"
+            output += f"average money after going 0-5 if you don't force: {not_forced_money[3][4]/not_forced_scores[3][4]:.1f}k\n"
 
+        #output += f"good outcome when forcing: {(forced_chance_4_1+forced_chance_3_2+forced_chance_2_3)*100:.2f}%\n"
+        #output += f"good outcome when not forcing: {(not_forced_chance_4_1+not_forced_chance_3_2+not_forced_chance_2_3)*100:.2f}%\n"
         print(output)
     except:
         print("Not enough data for chosen arguments.")
+
 
 def printTeamResults(teamForceSuccessRate):
     # team specific data
@@ -401,6 +408,8 @@ if __name__ == "__main__":
                     args["money"] = True
                 case "planted":
                     args["planted"] = True
+                case "attacknotplanted":
+                    args["attacknotplanted"] = True
                 case "help":
                     args["help"] = True
                 case "bad":
