@@ -4,6 +4,26 @@ import orjson
 import sys
 import re
 
+HELP_TEXT = """Usage: ./analyze.py [OPTION]...
+Analyzes Post-Partnership VCT data about forcing with various constraints and options.
+Example: ./analyze.py --attack -r5m
+
+  -h, --help                displays this message
+  -r5, --round5             displays data for up to the 5th round
+  -r4, --round4             displays data for up to the 4th round
+  -a, --attack              only analyzes rounds where the team that lost pistol was on attack
+  -d, --defense             only analyzes rounds where the team that lost pistol was on defense
+  -p, --planted             only analyzes rounds where the team that lost pistol was on attack and planted
+  -t, --teams               displays data for specific teams in the format (forceWins, forces, forceSuccessRate) sorted by success rate
+  -m, --money               displays average money banked after buying for the round with calculations
+  -f, --first               only analyzes data from the first half of each game
+  -s, --second              only analyzes data from the half of each game
+  -b, --bad                 removes games where the first half was a stomp (3-9 or worse)
+  --year=202*               only analyzes data from a year, valid options are 2023-2026
+  --maps                    calculates data separately for each map
+  --attacknotplanted        only analyzes rounds where the team that lost pistol was on attack and did not plant
+  --vcl                     analyzes data from VCL games since 2023 instead of VCT data"""
+
 forced_template = [0, [0, 0], [[0, 0], [0, 0]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]]] # [#won, [won, lost], [[wonwon, wonlost], [lostwon, lostlost]], etc.]
 not_forced_template = [0, [0, 0], [[0, 0], [0, 0]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]]] # [#won, [won, lost], [[wonwon, wonlost], [lostwon, lostlost]], etc.]
 forced_scores_template = [[0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]] # [[1-1, 0-2], [2-1, 1-2, 0-3], etc.]
@@ -372,8 +392,7 @@ def printTeamResults(teamForceSuccessRate):
     # team specific data
     teamSuccessRate = []
     for team, rate in teamForceSuccessRate.items():
-        if rate[1] > 8:
-            teamSuccessRate.append((team, rate, rate[0]/rate[1]))
+        teamSuccessRate.append((team, rate, rate[0]/rate[1]))
     
     teamSuccessRate.sort(key=lambda x: x[2], reverse=True)
     print(teamSuccessRate)
@@ -400,9 +419,9 @@ if __name__ == "__main__":
                     args["round5"] = True
                 case "maps":
                     args["maps"] = True
-                case "first" | "firsthalf":
+                case "first":
                     args["first"] = True
-                case "second" | "secondhalf":
+                case "second":
                     args["second"] = True
                 case "money":
                     args["money"] = True
@@ -446,13 +465,13 @@ if __name__ == "__main__":
                     case "h":
                         args["help"] = True
                     case _:
-                        print(f"Argument {argument.lower()} not recognized. Run ./analyze -h for a list of valid arguments.")
+                        print(f"Argument {argument.lower()} not recognized. Run ./analyze --help for a list of valid arguments.")
                         exit(1)
                 i += 1
 
 
     if "help" in args:
-        print("TODO")
+        print(HELP_TEXT)
         exit(1)
     if "attack" in args and "defense" in args:
         print("You can't specify only attack and only defense. If you want to show the data for both sides, use neither argument.")
@@ -463,12 +482,12 @@ if __name__ == "__main__":
     if "round4" in args and "round5" in args:
         print("You can't specify going up to round 4 and round 5 at once. If you want to show the data up to round 5, use only -r5 or --round5.")
         exit(1)
-    if "planted" in args and ("attack" in args or "defense" in args):
-        print("You can't specify planted and a half. If you only want the data when the team that lost pistol was on attack and planted, use only --planted or -p. If you only want the data when the teamt that won pistol was on attack and planted, that data currently isn't available.")
+    if int("planted" in args) + int("attack" in args) + int("defense" in args) + int("attacknotplanted" in args) > 1:
+        print("You can only specify one of: attack, defense, planted, attacknotplanted.")
         exit(1)
     if "year" in args and (int(args["year"]) > 2026 or int(args["year"]) < 2023):
-            print("The year argument must be from 2023 to 2026. Format it as --year=202x.")
-            exit(1)
+        print("The year argument must be from 2023 to 2026. Format it as --year=202x.")
+        exit(1)
     
 
 
