@@ -3,6 +3,8 @@ import copy
 import orjson
 import sys
 import re
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 HELP_TEXT = """Usage: ./analyze.py [OPTION]...
 Analyzes Post-Partnership VCT data about forcing with various constraints and options.
@@ -22,7 +24,8 @@ Example: ./analyze.py --attack -r5m
   --year=202*               only analyzes data from a year, valid options are 2023-2026
   --maps                    calculates data separately for each map
   --attacknotplanted        only analyzes rounds where the team that lost pistol was on attack and did not plant
-  --vcl                     analyzes data from VCL games since 2023 instead of VCT data"""
+  --vcl                     analyzes data from VCL games since 2023 instead of VCT data
+  --plot                    shows a plot of round vs round diff for teams that forced vs. didn't"""
 
 forced_template = [0, [0, 0], [[0, 0], [0, 0]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]]] # [#won, [won, lost], [[wonwon, wonlost], [lostwon, lostlost]], etc.]
 not_forced_template = [0, [0, 0], [[0, 0], [0, 0]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]]] # [#won, [won, lost], [[wonwon, wonlost], [lostwon, lostlost]], etc.]
@@ -31,7 +34,7 @@ not_forced_scores_template = [[0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]] 
 forced_money_template = [[0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]] # [[1-1, 0-2], [2-1, 1-2, 0-3], etc.]
 not_forced_money_template = [[0, 0], [0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0, 0]] # [[1-1, 0-2], [2-1, 1-2, 0-3], etc.]
 
-def analyzeMapData(data, *, args):
+def analyzeMapData(data, *, args=[]):
     maps = {}
     teamForceSuccessRate = {}
 
@@ -120,8 +123,6 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
 
         loserIndex = roundLossesIndex[startingIndex]
         moneySaved2nd = float(roundEco[startingIndex+1][loserIndex])
-
-
         
         # are you on attack or defense?
         if "attack" in args and roundWins[startingIndex][1] == 't' or "defense" in args and roundWins[startingIndex][1] == 'ct':
@@ -194,7 +195,7 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
         current_money[3][won2nd + won3rd + won4th + won5th] += float(roundEco[startingIndex+4][loserIndex])
 
 
-def printResults(forced, not_forced, forced_money, not_forced_money, forced_scores, not_forced_scores, *, args):
+def printResults(forced, not_forced, forced_money, not_forced_money, forced_scores, not_forced_scores, *, args=[]):
     try:
         output = ""
 
@@ -397,6 +398,97 @@ def printTeamResults(teamForceSuccessRate):
     teamSuccessRate.sort(key=lambda x: x[2], reverse=True)
     print(teamSuccessRate)
 
+
+def plot(data, *, args=[]):
+    roundSize = 5 if "round5" in args else 4 if "round4" in args else 3
+    rounds = list(range(1, 1+roundSize))
+    forced_count = 0
+    not_forced_count = 0
+
+    for game in data:
+        roundWins = game["roundWins"]
+        teams = game["teams"]
+        roundLossesIndex = [1 if r[0] == teams[0] else 0 for r in roundWins]
+        roundEcos = game["roundEcos"]
+
+        halfRange = (0,12)
+        if "first" in args:
+            halfRange = (0,)
+        elif "second" in args:
+            halfRange = (12,)
+        for startingIndex in halfRange:
+            if startingIndex == 12:
+                roundsInHalf = len(roundWins)-startingIndex
+                if roundsInHalf < roundSize:
+                    continue
+
+            loserIndex = roundLossesIndex[startingIndex]
+            moneySaved2nd = float(roundEcos[startingIndex+1][loserIndex])
+            if moneySaved2nd < 4.5:
+                forced_count += 1
+            else:
+                not_forced_count += 1
+
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+    ax1.set(title="Forced", xlabel='Round #', ylabel='Round Diff')
+    ax1.set_xticks(list(range(1, roundSize+1)))
+    forced_colorizer = mpl.colorizer.Colorizer(norm=mpl.colors.Normalize(1, forced_count), cmap='nipy_spectral_r')
+    fig.colorbar(mpl.colorizer.ColorizingArtist(forced_colorizer), ax=ax1, orientation='vertical', label='Occurences')
+
+    ax2.set(title="Not Forced", xlabel='Round #', ylabel='Round Diff')
+    ax2.set_xticks(list(range(1, roundSize+1)))
+    not_forced_colorizer = mpl.colorizer.Colorizer(norm=mpl.colors.Normalize(1, not_forced_count), cmap='nipy_spectral_r')
+    fig.colorbar(mpl.colorizer.ColorizingArtist(not_forced_colorizer), ax=ax2, orientation='vertical', label='Occurences')
+
+    plt.tight_layout()
+
+    forced_paths = [[0]*(2*i) for i in range(1, roundSize)]
+    not_forced_paths = [[0]*(2*i) for i in range(1, roundSize)]
+
+    for game in data:
+        roundWins = game["roundWins"]
+        teams = game["teams"]
+        roundLossesIndex = [1 if r[0] == teams[0] else 0 for r in roundWins]
+        roundEcos = game["roundEcos"]
+
+        halfRange = (0,12)
+        if "first" in args:
+            halfRange = (0,)
+        elif "second" in args:
+            halfRange = (12,)
+        for startingIndex in halfRange:
+            if startingIndex == 12:
+                roundsInHalf = len(roundWins)-startingIndex
+                if roundsInHalf < roundSize:
+                    continue
+
+            loserIndex = roundLossesIndex[startingIndex]
+            moneySaved2nd = float(roundEcos[startingIndex+1][loserIndex])
+            paths = forced_paths if moneySaved2nd < 4.5 else not_forced_paths
+
+            lastRoundIndex = 0
+            round1Winner = roundWins[startingIndex][0]
+            for i in range(1, roundSize):
+                if roundWins[startingIndex+i][0] != round1Winner: # team that lost pistol won
+                    lastRoundIndex += 1
+                paths[i-1][lastRoundIndex] += 1
+                lastRoundIndex = (lastRoundIndex+1)//2*2
+
+    print(forced_count, forced_paths)
+    print(not_forced_count, not_forced_paths)
+
+
+    for ax, paths, colorizer in ((ax1, forced_paths, forced_colorizer), (ax2, not_forced_paths, not_forced_colorizer)):
+        for r, occurList in enumerate(paths):
+            for i in range(0, len(occurList), 2):
+                ax.plot((r+1, r+2), (-r + i - 1, -r + i - 2), color=colorizer.to_rgba(occurList[i]), linewidth=3)
+                ax.plot((r+1, r+2), (-r + i - 1, -r + i), color=colorizer.to_rgba(occurList[i+1]), linewidth=3)
+
+    plt.show()
+
+
+
 if __name__ == "__main__":
 
     args = {}
@@ -433,6 +525,8 @@ if __name__ == "__main__":
                     args["help"] = True
                 case "bad":
                     args["bad"] = True
+                case "plot":
+                    args["plot"] = True
                 case str() if re.fullmatch(r"year=\d+", argument[2:].lower()):
                     args["year"] = re.fullmatch(r"year=(\d+)", argument[2:].lower()).group(1)
                 case _:
@@ -502,4 +596,7 @@ if __name__ == "__main__":
         analyzeMapData(data, args=args)
     else:
         analyzeOverallData(data, args=args)
+
+    if "plot" in args:
+        plot(data, args=args)
 
