@@ -3,6 +3,7 @@ import copy
 import orjson
 import sys
 import re
+import time
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
@@ -433,15 +434,22 @@ def plot(data, *, args=[]):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
     ax1.set(title="Forced", xlabel='Round #', ylabel='Round Diff')
     ax1.set_xticks(list(range(1, roundSize+1)))
+    ax1.set_yticks(list(range(-roundSize, roundSize-1)))
     forced_colorizer = mpl.colorizer.Colorizer(norm=mpl.colors.Normalize(1, forced_count), cmap='nipy_spectral_r')
     fig.colorbar(mpl.colorizer.ColorizingArtist(forced_colorizer), ax=ax1, orientation='vertical', label='Occurences')
 
     ax2.set(title="Not Forced", xlabel='Round #', ylabel='Round Diff')
     ax2.set_xticks(list(range(1, roundSize+1)))
+    ax2.set_yticks(list(range(-roundSize, roundSize-1)))
     not_forced_colorizer = mpl.colorizer.Colorizer(norm=mpl.colors.Normalize(1, not_forced_count), cmap='nipy_spectral_r')
     fig.colorbar(mpl.colorizer.ColorizingArtist(not_forced_colorizer), ax=ax2, orientation='vertical', label='Occurences')
 
     plt.tight_layout()
+    plt.ion()
+    plt.show()
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+    time.sleep(5)
 
     forced_paths = [[0]*(2*i) for i in range(1, roundSize)]
     not_forced_paths = [[0]*(2*i) for i in range(1, roundSize)]
@@ -465,27 +473,51 @@ def plot(data, *, args=[]):
 
             loserIndex = roundLossesIndex[startingIndex]
             moneySaved2nd = float(roundEcos[startingIndex+1][loserIndex])
-            paths = forced_paths if moneySaved2nd < 4.5 else not_forced_paths
+            if moneySaved2nd < 4.5:
+                paths = forced_paths
+                ax = ax1
+                colorizer = forced_colorizer
+            else:
+                paths = not_forced_paths
+                ax = ax2
+                colorizer = not_forced_colorizer
 
             lastRoundIndex = 0
             round1Winner = roundWins[startingIndex][0]
             for i in range(1, roundSize):
+                xlim = ax.get_xlim()
+                ylim = ax.get_ylim()
+                print(paths, i, lastRoundIndex)
                 if roundWins[startingIndex+i][0] != round1Winner: # team that lost pistol won
+                    ax.plot((i, i+1), (-i + lastRoundIndex, -i + lastRoundIndex + 1), color=colorizer.to_rgba(paths[i-1][lastRoundIndex+1]), linewidth=3)
                     lastRoundIndex += 1
+                else:
+                    ax.plot((i, i+1), (-i + lastRoundIndex, -i + lastRoundIndex - 1), color=colorizer.to_rgba(paths[i-1][lastRoundIndex]), linewidth=3)
+
                 paths[i-1][lastRoundIndex] += 1
+
+                #r = i
+                #i = lastRoundIndex
+                #plt.show()
+
                 lastRoundIndex = (lastRoundIndex+1)//2*2
+                ax.set_xlim(xlim)
+                ax.set_ylim(ylim)
+            fig.canvas.draw()
+            fig.canvas.flush_events()
 
-    print(forced_count, forced_paths)
-    print(not_forced_count, not_forced_paths)
+    #print(forced_count, forced_paths)
+    #print(not_forced_count, not_forced_paths)
 
 
-    for ax, paths, colorizer in ((ax1, forced_paths, forced_colorizer), (ax2, not_forced_paths, not_forced_colorizer)):
-        for r, occurList in enumerate(paths):
-            for i in range(0, len(occurList), 2):
-                ax.plot((r+1, r+2), (-r + i - 1, -r + i - 2), color=colorizer.to_rgba(occurList[i]), linewidth=3)
-                ax.plot((r+1, r+2), (-r + i - 1, -r + i), color=colorizer.to_rgba(occurList[i+1]), linewidth=3)
+    #for ax, paths, colorizer in ((ax1, forced_paths, forced_colorizer), (ax2, not_forced_paths, not_forced_colorizer)):
+    #    for r, occurList in enumerate(paths):
+    #        for i in range(0, len(occurList), 2):
+    #            ax.plot((r+1, r+2), (-r + i - 1, -r + i - 2), color=colorizer.to_rgba(occurList[i]), linewidth=3)
+    #            ax.plot((r+1, r+2), (-r + i - 1, -r + i), color=colorizer.to_rgba(occurList[i+1]), linewidth=3)
 
     plt.show()
+    plt.pause(5)
 
 
 
