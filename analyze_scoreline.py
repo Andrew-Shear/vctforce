@@ -1,5 +1,7 @@
 import orjson
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import numpy as np
 
 with open("VCT_data/data_VCT.json") as file:
     data = orjson.loads(file.read())
@@ -36,7 +38,7 @@ for game in data:
         print(game["matchID"], roundWins, winnerWins, loserWins, saved_winnerWins, saved_loserWins)
 
 
-sorted_scorelines = sorted([[scoreline, percent[0]/percent[1]] for scoreline, percent in scorelines.items()], key=lambda x: x[1])
+sorted_scorelines = sorted([[scoreline, percent[0]/percent[1]] for scoreline, percent in scorelines.items()], key=lambda x: x[1] + 0.0001*x[0][0])
 
 #for scoreline in sorted_scorelines:
 #    print(f"{scoreline[0]}: {scoreline[1]*100:.2f}%")
@@ -45,11 +47,13 @@ fig, ax = plt.subplots(figsize=(18, 8))
 
 x = [str(s[0]) for s in sorted_scorelines]
 y = [s[1]*100 for s in sorted_scorelines]
+colors = plt.colormaps['RdYlGn'](mcolors.Normalize(vmin=0, vmax=100)(y))
 
-ax.bar(x, y)
+ax.bar(x, y, color=colors)
+
 ax.set_xlabel("Scoreline")
-ax.set_ylabel("Chance of winning the game")
-ax.set_title("Chance of winning a game from certain scorelines")
+ax.set_ylabel("% Chance of Winning the Map")
+ax.set_title("Chance of Winning a Map From Certain Scorelines")
 
 ax.set_yticks(list(range(0, 101, 10)))
 ax.grid(axis="y")
