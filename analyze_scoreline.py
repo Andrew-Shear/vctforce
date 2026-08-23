@@ -3,18 +3,24 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import numpy as np
 
-with open("VCT_data/data_VCT.json") as file:
+with open("VCL_data/data_VCL.json") as file:
     data = orjson.loads(file.read())
 
+with open("VCT_data/data_VCT.json") as file:
+    data = data + orjson.loads(file.read())
+
+print(len(data))
 # NORMAL
 #scorelines = {}
 
 # FORCING
 # manual adjustment rahhhh
-not_forced_scorelines = {(1, 12): [0, 1]}
+not_forced_scorelines = {(1, 12): [0, 1], (0, 13): [0,1]}
 forced_scorelines = {(12, 1): [1, 1]}
 
 for game in data:
+    if game["year"] != "2026":
+        continue
     roundWins = [r[0] for r in game["roundWins"]]
     if len(roundWins) == 0: continue
 
@@ -33,7 +39,8 @@ for game in data:
 
     scorelines = forced_scorelines if secondPistolLoserForced else not_forced_scorelines
 
-    if sPLoserWins == 8 and scorelines == forced_scorelines:
+    if sPLoserWins == 9 and scorelines == not_forced_scorelines:
+        print(f"https://www.vlr.gg/{game["matchID"]}?game={game["gameID"]}")
         print(roundEcos[13][secondPistolLoserIndex])
         print("won" if secondPistolWinner != gameWinner else "lost")
 
@@ -82,10 +89,12 @@ for game in data:
     #    scorelines[(winnerWins, loserWins)][1] += 1
     #    scorelines[(winnerWins, loserWins)][0] += 1
 
+print(forced_scorelines)
+print(not_forced_scorelines)
 
 # FORCING
 fig, ax = plt.subplots(figsize=(18, 8))
-ax.set_title("VCT 2023-Present Data: Chance of Winning a Map After You Lose 2nd Pistol and Force/Don't Force")
+ax.set_title("VCL & VCT 2026 Data: Chance of Winning a Map After You Lose 2nd Pistol and Force/Don't Force")
 forced_sorted_scorelines = sorted([[scoreline, percent[0]/percent[1]*100] for scoreline, percent in forced_scorelines.items()], key=lambda x: x[0][0])
 not_forced_sorted_scorelines = sorted([[scoreline, percent[0]/percent[1]*100] for scoreline, percent in not_forced_scorelines.items()], key=lambda x: x[0][0])
 
