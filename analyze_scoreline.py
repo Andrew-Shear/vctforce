@@ -9,11 +9,19 @@ with open("VCT_data/data_VCT.json") as file:
 scorelines = {}
 for game in data:
     roundWins = [r[0] for r in game["roundWins"]]
+    if len(roundWins) == 0: continue
     gameWinner = roundWins[-1]
     winnerWins = roundWins[:12].count(gameWinner)
     loserWins = 12 - winnerWins
-    saved_winnerWins = winnerWins
-    saved_loserWins = loserWins
+    if winnerWins != loserWins:
+        if (loserWins, winnerWins) not in scorelines:
+            scorelines[(loserWins, winnerWins)] = [0, 0]
+        if (winnerWins, loserWins) not in scorelines:
+            scorelines[(winnerWins, loserWins)] = [0, 0]
+        scorelines[(loserWins, winnerWins)][1] += 1
+        scorelines[(winnerWins, loserWins)][1] += 1
+        scorelines[(winnerWins, loserWins)][0] += 1
+
     for i in range(12, min(len(roundWins)-1, 24)):
         if roundWins[i] == gameWinner:
             winnerWins += 1
@@ -26,16 +34,15 @@ for game in data:
         else:
             scoreline = (winnerWins, loserWins)
 
+        if max(winnerWins, loserWins) >= 13:
+            break
         if (loserWins, winnerWins) not in scorelines:
             scorelines[(loserWins, winnerWins)] = [0, 0]
         if (winnerWins, loserWins) not in scorelines:
             scorelines[(winnerWins, loserWins)] = [0, 0]
-        if loserWins != winnerWins:
-            scorelines[(loserWins, winnerWins)][1] += 1
+        scorelines[(loserWins, winnerWins)][1] += 1
         scorelines[(winnerWins, loserWins)][1] += 1
         scorelines[(winnerWins, loserWins)][0] += 1
-    if max(winnerWins, loserWins) >= 14:
-        print(game["matchID"], roundWins, winnerWins, loserWins, saved_winnerWins, saved_loserWins)
 
 
 sorted_scorelines = sorted([[scoreline, percent[0]/percent[1]] for scoreline, percent in scorelines.items()], key=lambda x: x[1] + 0.0001*x[0][0])
@@ -53,7 +60,7 @@ ax.bar(x, y, color=colors)
 
 ax.set_xlabel("Scoreline")
 ax.set_ylabel("% Chance of Winning the Map")
-ax.set_title("Chance of Winning a Map From Certain Scorelines")
+ax.set_title("VCT 2023-Present Data: Chance of Winning a Map From Certain Scorelines")
 
 ax.set_yticks(list(range(0, 101, 10)))
 ax.grid(axis="y")
