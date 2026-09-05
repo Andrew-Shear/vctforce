@@ -1,17 +1,16 @@
 import requests
 import time
 from bs4 import BeautifulSoup
+from VCT_data import VCT_matchIDs
 import random
 
-matchIDs = []
-with open(f"VCL_data/VCL_matchIDs.txt", "r") as file:
-    matchIDs += file.read().splitlines()
+matchIDs = VCT_matchIDs.data2
 
-with open(f"VCL_data/data_VCL.py", "w") as file:
+with open(f"VCT_data/data_VCT_new.py", "w") as file:
     wait = 0
     file.write("data = [\n")
     for i in range(len(matchIDs)):
-        matchID = matchIDs[i]
+        matchID = matchIDs[i]['matchID']
         print("parsing match " + matchID + "...")
         foundMatch = False
         attempts = 0
@@ -134,7 +133,11 @@ with open(f"VCL_data/data_VCL.py", "w") as file:
                             "roundWins": roundWins,
                             "roundWinMethods": roundWinMethods,
                             "roundEcos": matchData[gameID]["roundEcos"],
-                            "roundSpent": matchData[gameID]["roundSpent"]
+                            "roundSpent": matchData[gameID]["roundSpent"],
+                            "eventID": matchIDs[i]["eventID"],
+                            "year": matchIDs[i]["year"],
+                            "month": matchIDs[i]["month"],
+                            "day": matchIDs[i]["day"],
                            }))
             file.write(",\n")
 

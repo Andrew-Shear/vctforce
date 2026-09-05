@@ -30,9 +30,9 @@ import random
 #exit(0)
 
 wait = 0
-events = VCL_events.events
-with open("VCL_data/VCL_matchIDs.py", "w") as file:
-    file.write("data = [\n")
+events = ["2978", "2977", "2776", "2976"]
+with open("VCT_data/VCT_matchIDs.py", "a") as file:
+    file.write("data2 = [\n")
     for i in range(len(events)):
         event = events[i]
         response = requests.get(f"https://vlr.gg/event/matches/" + event)
@@ -55,6 +55,7 @@ with open("VCL_data/VCL_matchIDs.py", "w") as file:
             for match in divs[j+1].find_all('a'):
                 matchID = re.match(r"/(\d+)/.*", match["href"]).group(1)
                 file.write(str({"matchID": matchID,
+                            "eventID": event,
                             "year": year,
                             "month": month,
                             "day": day,

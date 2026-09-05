@@ -396,7 +396,7 @@ def printTeamResults(teamForceSuccessRate):
     for team, rate in teamForceSuccessRate.items():
         teamSuccessRate.append((team, rate, rate[0]/rate[1]))
     
-    teamSuccessRate.sort(key=lambda x: x[2], reverse=True)
+    teamSuccessRate.sort(key=lambda x: x[1][1], reverse=True)
     print(teamSuccessRate)
 
 
