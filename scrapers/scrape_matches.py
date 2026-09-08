@@ -58,8 +58,7 @@ with open("VCT_data/VCT_matchIDs.py", "a") as file:
                             "eventID": event,
                             "year": year,
                             "month": month,
-                            "day": day,
-                            "eventID": event
+                            "day": day
                             }))
                 file.write(", \n")
         wait += 1
@@ -70,3 +69,5 @@ with open("VCT_data/VCT_matchIDs.py", "a") as file:
         print(f"{len(events)-i-1} events left")
     file.write("]")
 
+data = [{"matchID": "734308", "eventID": "2977", "year": "2026", "month": "September", "day": "6"},
+        {"matchID": "742481", "eventID": "2776", "year": "2026", "month": "September", "day": "6"}]

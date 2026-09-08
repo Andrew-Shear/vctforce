@@ -4,7 +4,9 @@ from bs4 import BeautifulSoup
 from VCT_data import VCT_matchIDs
 import random
 
-matchIDs = VCT_matchIDs.data2
+matchIDs = [{"matchID": "734308", "eventID": "2977", "year": "2026", "month": "September", "day": "6"},
+            {"matchID": "742481", "eventID": "2776", "year": "2026", "month": "September", "day": "6"}]
+
 
 with open(f"VCT_data/data_VCT_new.py", "w") as file:
     wait = 0
