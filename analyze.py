@@ -26,7 +26,8 @@ Example: ./analyze.py --attack -r5m
   --maps                    calculates data separately for each map
   --attacknotplanted        only analyzes rounds where the team that lost pistol was on attack and did not plant
   --vcl                     analyzes data from VCL games since 2023 instead of VCT data
-  --plot                    shows a plot of round vs round diff for teams that forced vs. didn't"""
+  --plot                    shows a plot of round vs round diff for teams that forced vs. didn't
+  --stage22026              only analyzes data from stage 2 2026"""
 
 forced_template = [0, [0, 0], [[0, 0], [0, 0]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]]] # [#won, [won, lost], [[wonwon, wonlost], [lostwon, lostlost]], etc.]
 not_forced_template = [0, [0, 0], [[0, 0], [0, 0]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]]] # [#won, [won, lost], [[wonwon, wonlost], [lostwon, lostlost]], etc.]
@@ -112,6 +113,10 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
         if game["year"] != args["year"]:
             return
 
+    if "stage22026" in args:
+        if game["eventID"] not in ("2977", "2776", "2976"):
+            return
+
     roundLossesIndex = [1 if r[0] == teams[0] else 0 for r in roundWins]
     halfRange = (0,12)
     if "first" in args:
@@ -149,7 +154,7 @@ def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forc
         current_money = forced_money if moneySaved2nd < 4.5 else not_forced_money # 4.5k
         current[0] += 1
 
-        #if teams[loserIndex] == "G2" and current == forced and game["year"] == "2026":
+        #if teams[loserIndex] == "GEN" and current == forced:
         #    print(f"https://www.vlr.gg/{game["matchID"]}?game={game["gameID"]}&tab=economy")
 
 
@@ -559,6 +564,8 @@ if __name__ == "__main__":
                     args["bad"] = True
                 case "plot":
                     args["plot"] = True
+                case "stage22026":
+                    args["stage22026"] = True
                 case str() if re.fullmatch(r"year=\d+", argument[2:].lower()):
                     args["year"] = re.fullmatch(r"year=(\d+)", argument[2:].lower()).group(1)
                 case _:

@@ -1,72 +1,5 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## TODO ##
-# create bar chart with percentages
-# - one per region
-# - one overall
-# - one overall with stomps
-# - one overall with total numbers instead of percentages
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import orjson
 import matplotlib.pyplot as plt
-from VCT_data import data_VCT_new
 
 forces = {"2977": {"name": "Americas", "pw": 0, "pl": 0, "bw": 0, "bl": 0, "aw": 0, "al": 0},
            "2776": {"name": "Pacific", "pw": 0, "pl": 0, "bw": 0, "bl": 0, "aw": 0, "al": 0},
@@ -89,13 +22,22 @@ with open("VCT_data/data_VCT.json") as file:
 
 for game in data:
     event = game["eventID"]
-    if event not in eventTransfer: continue
-    event = eventTransfer[event]
+    key = ""
+    if event not in results:
+        if event in eventTransfer:
+            key = "p"
+            event = eventTransfer[event]
+        else:
+            continue
 
     roundWins = [r[0] for r in game["roundWins"]]
     teams = game["teams"]
     roundEco = game["roundEcos"]
-    key = "p"
+    if key == "":
+        if event == "2976":
+            key = "b" if game["month"] == "July" or (game["month"] == "August" and int(game["day"]) <= 4) else "a"
+        else:
+            key = "b" if game["month"] == "July" or (game["month"] == "August" and int(game["day"]) <= 11) else "a"
     
     for startingIndex in (0, 12):
         if len(roundEco) - startingIndex <= 1: continue
@@ -107,16 +49,17 @@ for game in data:
         if forcedKey == "f":
             forceWonKey = "w" if roundWins[startingIndex] != roundWins[startingIndex+1] else "l" # force won!
             forces[event][key + forceWonKey] += 1
+            if event == "2776" and key == "p":
+                print(f"https://www.vlr.gg/{game["matchID"]}?game={game["gameID"]}")
 
     if len(roundEco) < 14: continue
     stompKey = "s" if roundWins[:12].count(roundWins[12]) >= 9 else "c" # if 10-3 or worse
     stomps[event][key + stompKey] += 1
 
-
-data = data_VCT_new.data
-
+"""
 for game in data:
     event = game["eventID"]
+    if event not in results: continue
 
     roundWins = [r[0] for r in game["roundWins"]]
     teams = game["teams"]
@@ -137,7 +80,7 @@ for game in data:
     if len(roundEco) < 14: continue
     stompKey = "s" if roundWins[:12].count(roundWins[12]) >= 9 else "c" # if 10-3 or worse
     stomps[event][key + stompKey] += 1
-        
+   """     
 
 overall = {"pw": 0, "pl": 0, "bw": 0, "bl": 0, "aw": 0, "al": 0, "pf": 0, "pn": 0, "bf": 0, "bn": 0, "af": 0, "an": 0, "ps": 0, "pc": 0, "bs": 0, "bc": 0, "as": 0, "ac": 0}
 for event, values in results.items():
@@ -153,8 +96,8 @@ for event, values in results.items():
     print(f"Forced rounds in stage 1: {combined["pf"]}")
     print(f"Non forced rounds in stage 2 groups: {combined["bn"]}")
     print(f"Forced rounds in stage 2 groups: {combined["bf"]}")
-    print(f"Non forced rounds in stage 2 groups: {combined["an"]}")
-    print(f"Forced rounds in stage 2 groups {combined["af"]}")
+    print(f"Non forced rounds in stage 2 play-ins + playoffs: {combined["an"]}")
+    print(f"Forced rounds in stage 2 play-ins + playoffs {combined["af"]}")
     print("-------------------------------")
 
     print(f"Forced rounds won in stage 1: {combined["pw"]}")
@@ -220,7 +163,7 @@ print(f"Stage 2 after stomp rate: {overall["as"]/(overall["as"]+overall["ac"])*1
 print(f"Stage 2 after force rate: {overall["af"]/(overall["af"]+overall["an"])*100:.2f}%")
 print(f"Stage 2 after force round win rate: {overall["aw"]/(overall["aw"]+overall["al"])*100:.2f}%")
 
-data = forces["2976"] | results["2976"] | stomps["2976"]
+data = forces["2776"] | results["2776"] | stomps["2776"]
 
 fig, ax = plt.subplots(figsize=(8, 6))
 res = ax.grouped_bar({"Force Rate": [data["pf"]/(data["pf"]+data["pn"])*100,
@@ -232,10 +175,10 @@ res = ax.grouped_bar({"Force Rate": [data["pf"]/(data["pf"]+data["pn"])*100,
                       "Stomp Rate": [data["ps"]/(data["ps"]+data["pc"])*100,
                                      data["bs"]/(data["bs"]+data["bc"])*100,
                                      data["as"]/(data["as"]+data["ac"])*100]},
-                     tick_labels=("Stage 1", "Stage 2 pre-video", "Stage 2 post-video"),
+                     tick_labels=("Stage 1", "Stage 2 groups", "Stage 2 play-ins + playoffs"),
                      group_spacing=1)
 
-ax.set_title("VCT 2026 Stage 1 & 2 EMEA Forcing Data")
+ax.set_title("VCT 2026 Stage 1 & 2 Pacific Forcing Data")
 ax.set_ylim(0, 75)
 for container in res.bar_containers:
     ax.bar_label(container, padding=3, fmt="{:.2f}%")
