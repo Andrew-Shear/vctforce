@@ -1,1 +1,5 @@
-Should you force after losing pistol in VCT? Yes, probably. Here's a link to a video made by a respected member of the community about my data: https://www.youtube.com/watch?v=aYbGq1iZq1g
+Should you force after losing pistol in VCT? Yes, probably. Here are links to videos made by a respected member of the community about my data:
+
+https://www.youtube.com/watch?v=aYbGq1iZq1g
+
+https://youtu.be/cmPFsR60myc?si=CCXHm5aFmDUF8VNc
