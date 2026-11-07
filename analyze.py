@@ -105,7 +105,6 @@ def analyzeOverallData(data, *, args=[]):
 def analyzeGame(game, forced, not_forced, forced_scores, not_forced_scores, forced_money, not_forced_money, teamForceSuccessRate, *, args):
     teams = game["teams"]
     roundWins = game["roundWins"]
-    roundSpent = game["roundSpent"]
     roundEco = game["roundEcos"]
     roundWinMethods = game["roundWinMethods"]
 
