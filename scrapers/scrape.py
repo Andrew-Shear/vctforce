@@ -4,8 +4,9 @@ from bs4 import BeautifulSoup
 from VCT_data import VCT_matchIDs
 import random
 
-matchIDs = [{"matchID": "734308", "eventID": "2977", "year": "2026", "month": "September", "day": "6"},
-            {"matchID": "742481", "eventID": "2776", "year": "2026", "month": "September", "day": "6"}]
+#matchIDs = [{"matchID": "734308", "eventID": "2977", "year": "2026", "month": "September", "day": "6"},
+#            {"matchID": "742481", "eventID": "2776", "year": "2026", "month": "September", "day": "6"}]
+matchIDs = VCT_matchIDs.data3
 
 
 with open(f"VCT_data/data_VCT_new.py", "w") as file:
@@ -69,26 +70,25 @@ with open(f"VCT_data/data_VCT_new.py", "w") as file:
             if gameID == 'all':
                 continue
 
-            table = gameCover.find_all('table', class_='wf-table-inset')
+            table = gameCover.find_all('div', class_='vlr-rounds-row')
             if len(table) == 0:
                 # this map is not available (always means it wasn't played afaik)
                 continue
 
-            table = table[1].find_all('td')
+            table = table[0].find_all('div', class_='vlr-rounds-row-col')
+            
             teamNames = [name.text.strip() for name in table[0].find_all('div', class_='team')]
-
             roundEcos = []
-            roundSpent = []
+
             for td in table[1:]:
-                Round = td.find_all('div', class_='rnd-sq')
-                if len(Round) == 0:
+                Round = td.find_all('div', class_='ecc-c')
+                if len(Round) == 0 or Round[0].div.find('span') is None:
                     # not a real round
                     continue
 
-                roundEcos.append([float(bank.text.strip()[:-1]) for bank in td.find_all('div', class_='bank')])
-                roundSpent.append([r.text.count("$") for r in Round])
+                roundEcos.append([float(bank.find('div', class_='ecr-fig').text.strip()) for bank in td.find_all('div', class_='ecr-bank')])
 
-            matchData[gameID] = {"roundEcos": roundEcos, "roundSpent": roundSpent}
+            matchData[gameID] = {"roundEcos": roundEcos}
 
 
         for gameCover in soup.find('div', class_='vm-stats-container').find_all('div', class_='vm-stats-game'):
@@ -109,7 +109,8 @@ with open(f"VCT_data/data_VCT_new.py", "w") as file:
                     # it's not a real round
                     continue
                 Round = td.find_all('div', class_='rnd-sq')
-                if len(Round) == 0: continue
+                if len(Round) == 0:
+                    continue
                 if "mod-win" in Round[0]["class"]:
                     roundWins.append([teamNames[0],])
                     winnerDiv = Round[0]
@@ -135,7 +136,6 @@ with open(f"VCT_data/data_VCT_new.py", "w") as file:
                             "roundWins": roundWins,
                             "roundWinMethods": roundWinMethods,
                             "roundEcos": matchData[gameID]["roundEcos"],
-                            "roundSpent": matchData[gameID]["roundSpent"],
                             "eventID": matchIDs[i]["eventID"],
                             "year": matchIDs[i]["year"],
                             "month": matchIDs[i]["month"],

@@ -30,7 +30,8 @@ import random
 #exit(0)
 
 wait = 0
-events = ["2978", "2977", "2776", "2976"]
+#events = ["2978", "2977", "2776", "2976"]
+events = ["2766"] # champs 2026
 with open("VCT_data/VCT_matchIDs.py", "a") as file:
     file.write("data2 = [\n")
     for i in range(len(events)):
